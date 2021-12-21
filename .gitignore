@@ -1,0 +1,13 @@
+# NPM dependencies
+node_modules
+
+# If using vscode
+.vscode
+
+# DAT files
+faa-data/*.DAT
+faa-data/*.Dat
+faa-data/*.pdf
+
+# build
+build
