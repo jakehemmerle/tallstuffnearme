@@ -6,7 +6,7 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "start": "yarn exec tsc && node ./build/index.js",
+    "start": "ts-node ./src/index.ts",
     "test": "ts-mocha",
     "build": "yarn exec tsc"
   },
