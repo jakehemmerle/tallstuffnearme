@@ -1,4 +1,7 @@
 import { readFileSync } from 'fs';
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
 
 // interface FAAObject {
 //     OASNumber: number;
@@ -20,7 +23,7 @@ import { readFileSync } from 'fs';
 // }
 
 interface FAAObject {
-    OASNumber: string;
+    OASNumber: number;
     Verified: string;
     Country: string;
     State: string;
@@ -28,8 +31,8 @@ interface FAAObject {
     Latitude: string;
     Longitude: string;
     ObstacleType: string;
-    AGL: string;
-    AMSL: string;
+    AGL: number;
+    AMSL: number;
     LT: string;
     H: string;
     AccV: string;
@@ -41,8 +44,9 @@ interface FAAObject {
 
 const rawStringToFAAObject = (line: string): FAAObject => {
 
+    // NOTE: OASNumber has a prefix, we remove prefix for DB id for now... I think it's a US state identifier
     const currentObject: FAAObject = {
-        OASNumber: line.slice(0, 10).trimEnd(),
+        OASNumber: parseInt(line.slice(3, 10).trimEnd()),
         Verified: line.slice(10, 11),
         Country: line.slice(12, 14),
         State: line.slice(15, 17),
@@ -50,8 +54,8 @@ const rawStringToFAAObject = (line: string): FAAObject => {
         Latitude: line.slice(35, 47),
         Longitude: line.slice(48, 61),
         ObstacleType: line.slice(62, 80).trimEnd(),
-        AGL: line.slice(83, 88),
-        AMSL: line.slice(89, 94),
+        AGL: parseInt(line.slice(83, 88)),
+        AMSL: parseInt(line.slice(89, 94)),
         LT: line.slice(95, 96),
         H: line.slice(97, 98),
         AccV: line.slice(99, 100),
@@ -65,17 +69,24 @@ const rawStringToFAAObject = (line: string): FAAObject => {
 
 }
 
-export const parseOhioAsText = (): FAAObject[] => {
-    let parsedLocations: FAAObject[] = [];
-    const rawText = readFileSync('./faa-data/39-OH.Dat', { encoding: 'utf8' });
+export const datFileToObjectArray = async (path: string): Promise<FAAObject[]> => {
+    const rawText = readFileSync(path, { encoding: 'utf8' });
     const rawLines = rawText.split(/\r?\n/);
 
     const locationsAsRawStrings = rawLines.slice(4); // remove first few lines of non-object shit
+    const objects: FAAObject[] = locationsAsRawStrings.map((rawLocation) => rawStringToFAAObject(rawLocation));
+    return objects;
 
-    locationsAsRawStrings.forEach((line) => {
-        parsedLocations.push(rawStringToFAAObject(line));
-    })
+    const insert = await prisma.fAAObject.create({
+        data: objects[0],
+    });
+
+    // await Promise.all(
+    //     objects.map(async (object) => {
+    //         await prisma.fAAObject.create({
+    //             data: object,
+    //         })
+    //     })
+    // )
     
-    return parsedLocations;
 }
-

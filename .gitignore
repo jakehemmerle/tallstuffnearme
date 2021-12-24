@@ -11,3 +11,10 @@ faa-data/*.pdf
 
 # build
 build
+
+# yarn2
+.yarn
+
+# prisma
+prisma/dev.db
+.
