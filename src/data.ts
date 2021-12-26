@@ -1,8 +1,6 @@
 import { readFileSync } from 'fs';
 import { PrismaClient, Prisma, FAAObject } from '@prisma/client';
 
-const prisma = new PrismaClient();
-
 /*
 decimal degrees to distance
 
@@ -19,13 +17,41 @@ places	degrees	distance
 
 */
 
+// lat and long are the string as it's formatted in the DB
 
+// def dms2dd(degrees, minutes, seconds, direction):
+//     dd = float(degrees) + float(minutes)/60 + float(seconds)/(60*60);
+//     if direction == 'W' or direction == 'S':
+//         dd *= -1
+//     return dd;
+export const DMSToDD = (lat: string, long: string) => {
 
+}
 
 
 export const insertDatFileIntoDB = async (path: string): Promise<FAAObject[]> => {
+    const prisma = new PrismaClient();
 
     const rawStringToFAAObject = (line: string): Prisma.FAAObjectCreateInput => {
+
+        // input format is: '040 06 17.00N'
+        const DMSStringToDD = (dms: string): number => {
+            // parse strings
+            const decimal = parseFloat(dms.slice(0, 3));
+            const minute = parseFloat(dms.slice(4, 6));
+            const second = parseFloat(dms.slice(7, 12));
+            const direction = dms.slice(12, 13);
+
+            // convert to decimal
+            let dd = decimal + (minute / 60) + (second / (60 * 60));
+
+            // positive or negative dd based on direction of dms
+            if (direction === 'W' || direction === 'S') {
+                dd *= -1;
+            }
+
+            return dd;
+        }
 
         const currentObject: Prisma.FAAObjectCreateInput = {
             OASNumber: parseInt(line.slice(0, 2).concat(line.slice(3, 10)).trimEnd()),
@@ -33,7 +59,7 @@ export const insertDatFileIntoDB = async (path: string): Promise<FAAObject[]> =>
             Country: line.slice(12, 14),
             State: line.slice(15, 17),
             City: line.slice(18, 34).trimEnd(),
-            Latitude: line.slice(35, 47),
+            Latitude: line.slice(34, 47),
             Longitude: line.slice(48, 61),
             ObstacleType: line.slice(62, 80).trimEnd(),
             AGL: parseInt(line.slice(83, 88)),
