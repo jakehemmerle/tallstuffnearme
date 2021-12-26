@@ -93,15 +93,6 @@ export const insertDatFileIntoDB = async (path: string): Promise<void> => {
         data: insertableObjects,
     })
 
-    // let count = 1;
-    // for (var guy of insertableObjects) {
-    //     console.log(`created ${count}`)
-    //     await prisma.fAAObject.create({
-    //         data: guy,
-    //     })
-    //     count++;
-    // }
-
     return Promise.resolve();
 }
 
