@@ -6,9 +6,19 @@ This repo should show tall stuff around you based on the [FAA Digital Obstacle F
 
 decompress zip file in `faa-data`
 
-then run `yarn` (to install deps) and `yarn start` to run program
+then run `yarn` (to install deps)
+then run `yarn dev` to start program
 
-## Devs
+### Updating DB with new DAT files
+
+If you need to use newer DOF database, then do the following to generate a new DB from a new set of DAT files.
+
+1. empty the `./faa-data` folder, download the latest [FAA Digital Obstacle File](<https://www.faa.gov/air_traffic/flight_info/aeronav/digital_products/dof/> into the `./faa-data` folder and unzip it
+2. `yarn db:reset` - resets the DB to empty state
+3. `yarn db:seed` - seeds the database with the new DOF `.Dat` files.
+4. `yarn dev` to start the program
+
+## Dev Resources
 
 [FAA Digital Obstacle File](https://www.faa.gov/air_traffic/flight_info/aeronav/digital_products/dof/)
 [FAA Obstacle Data FAQ](https://www.faa.gov/air_traffic/flight_info/aeronav/obst_data/)
