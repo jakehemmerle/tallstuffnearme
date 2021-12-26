@@ -5,7 +5,7 @@
   "author": "Jake Hemmerle <jakehemmerle@protonmail.com>",
   "license": "MIT",
   "scripts": {
-    "db:reset": "rm ./prisma/dev.db; prisma db push",
+    "db:reset": "rm ./prisma/dev.db; prisma db push; prisma generate",
     "db:studio": "prisma studio",
     "dev": "ts-node ./src/index.ts"
   },

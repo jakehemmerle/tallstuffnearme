@@ -16,8 +16,8 @@ model FAAObject {
     Country     String
     State       String
     City        String
-    Latitude    String
-    Longitude   String
+    Latitude    Float
+    Longitude   Float
     ObstacleType String
     AGL         Int
     AMSL        Int
