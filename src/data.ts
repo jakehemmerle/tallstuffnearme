@@ -1,16 +1,20 @@
 import { readFileSync } from 'fs';
 import { PrismaClient, Prisma, FAAObject } from '@prisma/client';
 
+// conversion parameters from: http://wiki.gis.com/wiki/index.php/Decimal_degrees
+const KM_PER_DEGREE = 111.320; // surface distance in km per degree
+const MILES_TO_KM = 1.609344;
+
 const prisma = new PrismaClient();
 
 /// digital degree
-export type DD = {
+export type DDCoordinates = {
     lattitude: number,
     longitude: number,
 };
 
 export type _QueryLocationParameters = {
-    location: DD
+    location: DDCoordinates
     radiusInMiles: number,
     lattitudeUpperBound: number,
     lattitudeLowerBound: number,
@@ -18,12 +22,21 @@ export type _QueryLocationParameters = {
     longitudeLowerBound: number,
 }
 
-export const _getQueryCoordinates = (location: DD, radiusInMiles: number): _QueryLocationParameters => {
-    // conversion parameters from: http://wiki.gis.com/wiki/index.php/Decimal_degrees
-    const KM_PER_DEGREE = 111.320; // surface distance in km per degree
-    const MILES_TO_KM = 1.609344;
+export type FAAObjectWithRelativeLocation = {
+    FAAObject,
+    distanceFromLocation: number,
+}
 
-    const decimalDistance = (radiusInMiles * MILES_TO_KM) / KM_PER_DEGREE // 113,320 is 
+const _degreesToMiles = (degrees: number): number => {
+    return degrees * KM_PER_DEGREE / MILES_TO_KM;
+}
+
+const _milesToDegrees = (miles: number): number => {
+    return miles * MILES_TO_KM / KM_PER_DEGREE // 113,320 is 
+}
+
+export const _getQueryCoordinates = (location: DDCoordinates, radiusInMiles: number): _QueryLocationParameters => {
+    const decimalDistance = _milesToDegrees(radiusInMiles);
     return {
         location,
         radiusInMiles,
@@ -77,6 +90,18 @@ const _rawStringToFAAObject = (line: string): Prisma.FAAObjectCreateInput => {
     return currentObject;
 }
 
+// compute the distance between two decimal degree points
+export const distanceBetweenPoints = (p1: DDCoordinates, p2: DDCoordinates): number => {
+    const latDelta = Math.abs(p1.lattitude - p2.lattitude);
+    const longDelta = Math.abs(p1.longitude - p2.longitude);
+
+    const distanceInDD = Math.sqrt(latDelta**2 + longDelta**2); // pythagorean theorum
+
+    return _degreesToMiles(distanceInDD);
+    
+} 
+
+// used for adding .Dat files to the PostgresDB
 export const insertDatFileIntoDB = async (path: string): Promise<void> => {
     // parse raw text
     const rawText: string = readFileSync(path, { encoding: 'utf8' });
@@ -96,7 +121,8 @@ export const insertDatFileIntoDB = async (path: string): Promise<void> => {
     return Promise.resolve();
 }
 
-export const queryTallestNearMe = async (location: DD, radius: number, gteHeightFeet: number): Promise<FAAObject[]> => {
+// one way to query objects!
+export const queryTallestNearMe = async (location: DDCoordinates, radius: number, gteHeightFeet: number): Promise<FAAObject[]> => {
     const {
         lattitudeUpperBound,
         lattitudeLowerBound,
@@ -116,10 +142,13 @@ export const queryTallestNearMe = async (location: DD, radius: number, gteHeight
             lte: longitudeUpperBound,
             gte: longitudeLowerBound
         },
+
+        // double negatives allows eliminating multiple strings from query (I know enum is cleaner but I'm lazy)
         ObstacleType: {
             contains: "TOWER",
             not: {
                 contains: "BLDG",
+
                 not: {
                     not:{
                         // equals: "TOWER",
