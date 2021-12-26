@@ -1,24 +1,40 @@
 import { readFileSync } from 'fs';
 import { PrismaClient, Prisma, FAAObject } from '@prisma/client';
 
-/*
-decimal degrees to distance
+/// digital degree
+export type DD = {
+    lattitude: number,
+    longitude: number,
+};
 
-places	degrees	distance
-0	1.0	111 km    ~ 111,319.9km
-1	0.1	11.1 km
-2	0.01	1.11 km
-3	0.001	111 m
-4	0.0001	11.1 m
-5	0.00001	1.11 m
-6	0.000001	0.111 m
-7	0.0000001	1.11 cm
-8	0.00000001	1.11 mm
+export type LocationAndRadius = {
+    location: DD
+    radiusInMiles: number,
+    lattitudeUpperBound: number,
+    lattitudeLowerBound: number,
+    longitudeUpperBound: number,
+    longitudeLowerBound: number,
+}
 
-*/
+export const getQueryCoordinates = (location: DD, radiusInMiles: number): LocationAndRadius => {
+    // conversion parameters from: http://wiki.gis.com/wiki/index.php/Decimal_degrees
 
-// input format eg. ' 40 06 17.00N'
-const DMSStringToDD = (dms: string): number => {
+    const MILES_TO_KM = 1.609344;
+    const KM_PER_DEGREE = 111320;
+
+    const decimalDistance = Math.abs((radiusInMiles * MILES_TO_KM) / KM_PER_DEGREE / 2) // divide by 2 because we do abs, 113,320 is surface distance in km per degree
+    return {
+        location,
+        radiusInMiles,
+        lattitudeUpperBound: location.lattitude + decimalDistance,
+        lattitudeLowerBound: location.lattitude - decimalDistance,
+        longitudeUpperBound: location.lattitude + decimalDistance,
+        longitudeLowerBound: location.lattitude - decimalDistance
+    }
+}
+
+// input format eg. ' 40 06 17.00N', takes lat or long as input
+export const DMSStringToDD = (dms: string): number => {
     // parse strings
     const decimal = parseFloat(dms.slice(0, 3));
     const minute = parseFloat(dms.slice(4, 6));
@@ -37,9 +53,6 @@ const DMSStringToDD = (dms: string): number => {
 }
 
 const rawStringToFAAObject = (line: string): Prisma.FAAObjectCreateInput => {
-
-    
-
     const currentObject: Prisma.FAAObjectCreateInput = {
         OASNumber: parseInt(line.slice(0, 2).concat(line.slice(3, 10)).trimEnd()),
         Verified: line.slice(10, 11),
