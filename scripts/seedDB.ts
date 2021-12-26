@@ -1,16 +1,22 @@
 import { PrismaClient, Prisma } from '@prisma/client'
 import { insertDatFileIntoDB } from '../src/data';
+import { readdirSync } from 'fs';
 
 const prisma = new PrismaClient()
 
-// A `main` function so that you can use async/await
+// populates full DB; fails at 
 async function populateDB() {
-  await insertDatFileIntoDB("./faa-data/39-OH.Dat");
-  console.log("complete oh!");
-  await insertDatFileIntoDB("./faa-data/21-KY.Dat");
-  console.log("complete ky!");
-  await insertDatFileIntoDB("./faa-data/18-IN.Dat");
-  console.log("complete in!");
+  // Only include US states. Non-state files include objects that don't have a OASNumber, which is the primary key for the DB
+  let fileNames: string[] = await readdirSync("./faa-data", "utf-8").filter((fileName) => fileName.includes("-"));
+
+  console.log('To be added to DB:');
+  console.log(fileNames);
+
+  for (let fileName of fileNames) {
+    const fullName = `./faa-data/${fileName}`
+    console.log(`adding ${fullName}`)
+    await insertDatFileIntoDB(fullName);
+  }
 }
 
 populateDB()
