@@ -5,6 +5,7 @@
   "author": "Jake Hemmerle <jakehemmerle@protonmail.com>",
   "license": "MIT",
   "scripts": {
+    "cli": "ts-node ./bin/cli.ts",
     "test": "jest",
     "db:reset": "prisma db push --force-reset; prisma generate",
     "db:reinitialize": "yarn db:reset && yarn db:seed",
