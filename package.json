@@ -6,6 +6,7 @@
   "license": "MIT",
   "scripts": {
     "db:reset": "rm ./prisma/dev.db; prisma db push; prisma generate",
+    "db:seed": "ts-node ./scripts/seedDB.ts",
     "db:studio": "prisma studio",
     "dev": "ts-node ./src/index.ts"
   },
