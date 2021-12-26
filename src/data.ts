@@ -77,7 +77,7 @@ const _rawStringToFAAObject = (line: string): Prisma.FAAObjectCreateInput => {
     return currentObject;
 }
 
-export const insertDatFileIntoDB = async (path: string): Promise<FAAObject[]> => {
+export const insertDatFileIntoDB = async (path: string): Promise<void> => {
     // parse raw text
     const rawText: string = readFileSync(path, { encoding: 'utf8' });
     const rawLines: string[] = rawText.split(/\r?\n/);
@@ -89,33 +89,44 @@ export const insertDatFileIntoDB = async (path: string): Promise<FAAObject[]> =>
     // json into db
     console.log(`adding ${insertableObjects.length} objects to db...`);
 
-    return Promise.all(
-        insertableObjects.map(async (object) => {
-            return prisma.fAAObject.create({
-                data: object,
-            })
-        })
-    )
-    
+    await prisma.fAAObject.createMany({
+        data: insertableObjects,
+    })
+
+    // let count = 1;
+    // for (var guy of insertableObjects) {
+    //     console.log(`created ${count}`)
+    //     await prisma.fAAObject.create({
+    //         data: guy,
+    //     })
+    //     count++;
+    // }
+
+    return Promise.resolve();
 }
 
-export const queryTallestNearMe = async (location: DD, radius: number, gteHeightFeet: number): Promise<FAAObject[]> => {
-
-    const coordinates: _QueryLocationParameters = _getQueryCoordinates(location, radius);
-    console.log(`coordinates: `);
-    console.log(coordinates);
+export const queryTallestNearMe = async (location: DD, radius: number, gteHeightFeet: number, objectExclude?: string): Promise<FAAObject[]> => {
+    const {
+        lattitudeUpperBound,
+        lattitudeLowerBound,
+        longitudeUpperBound,
+        longitudeLowerBound,
+    } = _getQueryCoordinates(location, radius);
 
     const where: Prisma.FAAObjectWhereInput = {
         AGL: {
             gte: gteHeightFeet
         },
         Latitude: {
-            lte: coordinates.lattitudeUpperBound,
-            gte: coordinates.lattitudeLowerBound
+            lte: lattitudeUpperBound,
+            gte: lattitudeLowerBound
         },
         Longitude: {
-            lte: coordinates.longitudeUpperBound,
-            gte: coordinates.longitudeLowerBound
+            lte: longitudeUpperBound,
+            gte: longitudeLowerBound
+        },
+        ObstacleType: {
+            not: objectExclude
         }
 
     }

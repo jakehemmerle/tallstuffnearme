@@ -6,7 +6,8 @@
   "license": "MIT",
   "scripts": {
     "test": "jest",
-    "db:reset": "rm ./prisma/dev.db; prisma db push; prisma generate",
+    "db:reset": "prisma db push --force-reset; prisma generate",
+    "db:reinitialize": "yarn db:reset && yarn db:seed",
     "db:seed": "ts-node ./scripts/seedDB.ts",
     "db:studio": "prisma studio",
     "dev": "ts-node ./src/index.ts"

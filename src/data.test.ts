@@ -21,6 +21,6 @@ test('query db for taller than 600ft objects', async () => {
         longitude: -84.513876,
     }
 
-    const objects = await queryTallestNearMe(location, 10, 600);
+    const objects = await queryTallestNearMe(location, 50, 400);
     console.log(objects);
 });
