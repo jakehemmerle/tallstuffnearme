@@ -87,7 +87,7 @@ export const insertDatFileIntoDB = async (path: string): Promise<void> => {
     const insertableObjects: Prisma.FAAObjectCreateInput[] = cleanedStrings.map((rawLocation) => _rawStringToFAAObject(rawLocation));
 
     // json into db
-    console.log(`adding ${insertableObjects.length} objects to db...`);
+    console.log(`found ${insertableObjects.length} objects. inserting into db...`);
 
     await prisma.fAAObject.createMany({
         data: insertableObjects,
@@ -105,7 +105,7 @@ export const insertDatFileIntoDB = async (path: string): Promise<void> => {
     return Promise.resolve();
 }
 
-export const queryTallestNearMe = async (location: DD, radius: number, gteHeightFeet: number, objectExclude?: string): Promise<FAAObject[]> => {
+export const queryTallestNearMe = async (location: DD, radius: number, gteHeightFeet: number): Promise<FAAObject[]> => {
     const {
         lattitudeUpperBound,
         lattitudeLowerBound,
@@ -126,7 +126,56 @@ export const queryTallestNearMe = async (location: DD, radius: number, gteHeight
             gte: longitudeLowerBound
         },
         ObstacleType: {
-            not: objectExclude
+            contains: "TOWER",
+            not: {
+                contains: "BLDG",
+                not: {
+                    not:{
+                        // equals: "TOWER",
+                        not: {
+                            not:{
+                                equals: "STACK",
+                                not: {
+                                    not:{
+                                        equals: "WINDMILL",
+                                        not: {
+                                            not:{
+                                                equals: "CATENARY",
+                                                not: {
+                                                    not:{
+                                                        contains: "TWR",
+                                                        not: {
+                                                            not:{
+                                                                // contains: "BRIDGE",
+                                                                not: {
+                                                                    not:{
+                                                                        contains: "MET",
+                                                                        
+                                                                    }
+                                                                    
+                                                                }
+                                                                
+                                                            }
+                                                            
+                                                        }
+                                                        
+                                                    }
+                                                    
+                                                }
+                                                
+                                            }
+                                            
+                                        }
+                                        
+                                    }
+                                    
+                                }
+                            }
+                            
+                        }
+                    }
+                }
+            }
         }
 
     }

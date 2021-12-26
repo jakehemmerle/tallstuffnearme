@@ -1,5 +1,6 @@
 // import { PrismaClient, Prisma } from '@prisma/client'
 import { _getQueryCoordinates, DD, _QueryLocationParameters, queryTallestNearMe  } from './data';
+import { readdirSync } from 'fs';
 
 // lat long at 0, 0
 // radius at 10 miles
@@ -21,6 +22,6 @@ test('query db for taller than 600ft objects', async () => {
         longitude: -84.513876,
     }
 
-    const objects = await queryTallestNearMe(location, 50, 400);
+    const objects = await queryTallestNearMe(location, 20, 400);
     console.log(objects);
 });
