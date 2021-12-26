@@ -1,14 +1,13 @@
-import { PrismaClient } from '@prisma/client'
+import { PrismaClient, Prisma } from '@prisma/client'
+import { insertDatFileIntoDB } from './parseDAT';
 
 const prisma = new PrismaClient()
 
 // A `main` function so that you can use async/await
 async function main() {
-  const allUsers = await prisma.user.findMany({
-    include: { posts: true },
-  })
-  // use `console.dir` to print nested objects
-  console.dir(allUsers, { depth: null })
+  const objects = await insertDatFileIntoDB("./faa-data/39-OH.Dat");
+  console.log("complete ohio!");
+
 }
 
 main()

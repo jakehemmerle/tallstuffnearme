@@ -1,5 +1,5 @@
 import { readFileSync } from 'fs';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Prisma } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
@@ -42,11 +42,11 @@ interface FAAObject {
     JDate: string;
 }
 
-const rawStringToFAAObject = (line: string): FAAObject => {
+const rawStringToFAAObject = (line: string): Prisma.FAAObjectCreateInput => {
 
     // NOTE: OASNumber has a prefix, we remove prefix for DB id for now... I think it's a US state identifier
-    const currentObject: FAAObject = {
-        OASNumber: parseInt(line.slice(3, 10).trimEnd()),
+    const currentObject: Prisma.FAAObjectCreateInput = {
+        OASNumber: parseInt(line.slice(0, 2).concat(line.slice(3, 10)).trimEnd()),
         Verified: line.slice(10, 11),
         Country: line.slice(12, 14),
         State: line.slice(15, 17),
@@ -69,24 +69,24 @@ const rawStringToFAAObject = (line: string): FAAObject => {
 
 }
 
-export const datFileToObjectArray = async (path: string): Promise<FAAObject[]> => {
+export const insertDatFileIntoDB = async (path: string): Promise<FAAObject[]> => {
+    // parse raw text
     const rawText = readFileSync(path, { encoding: 'utf8' });
     const rawLines = rawText.split(/\r?\n/);
 
-    const locationsAsRawStrings = rawLines.slice(4); // remove first few lines of non-object shit
-    const objects: FAAObject[] = locationsAsRawStrings.map((rawLocation) => rawStringToFAAObject(rawLocation));
-    return objects;
+    // raw text to json
+    const locationsAsRawStrings = rawLines.slice(4, rawLines.length - 1); // remove first few lines of non-object shit
+    const objects: Prisma.FAAObjectCreateInput[] = locationsAsRawStrings.map((rawLocation) => rawStringToFAAObject(rawLocation));
 
-    const insert = await prisma.fAAObject.create({
-        data: objects[0],
-    });
+    // json into db
+    console.log(`adding ${objects.length} objects to db...`);
 
-    // await Promise.all(
-    //     objects.map(async (object) => {
-    //         await prisma.fAAObject.create({
-    //             data: object,
-    //         })
-    //     })
-    // )
+    return Promise.all(
+        objects.map(async (object) => {
+            return prisma.fAAObject.create({
+                data: object,
+            })
+        })
+    )
     
 }

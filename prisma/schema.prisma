@@ -12,30 +12,38 @@ datasource db {
 
 model FAAObject {
     OASNumber   Int @id
+    Verified    String
     Country     String
     State       String
     City        String
     Latitude    String
     Longitude   String
     ObstacleType String
-    AGL        Int
+    AGL         Int
+    AMSL        Int
+    LT          String
+    H           String
+    AccV        String
+    MarInd      String
     FAAStudyNumber String
+    Action      String
+    JDate       String
 }
 
 // these are for the test db
 
-model Post {
-  id        Int     @id @default(autoincrement())
-  title     String
-  content   String?
-  published Boolean @default(false)
-  author    User?   @relation(fields: [authorId], references: [id])
-  authorId  Int?
-}
+// model Post {
+//   id        Int     @id @default(autoincrement())
+//   title     String
+//   content   String?
+//   published Boolean @default(false)
+//   author    User?   @relation(fields: [authorId], references: [id])
+//   authorId  Int?
+// }
 
-model User {
-  id    Int     @id @default(autoincrement())
-  email String  @unique
-  name  String?
-  posts Post[]
-}
+// model User {
+//   id    Int     @id @default(autoincrement())
+//   email String  @unique
+//   name  String?
+//   posts Post[]
+// }
