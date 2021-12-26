@@ -4,19 +4,11 @@ This shows you tall stuff around you from the best possible resource available: 
 
 ## Instructions
 
-1. decompress (or [download the latest][dof] DOF zip file in `faa-data`.
-2. `yarn` (to install deps)
-3. `yarn db:reset && yarn db:seed`
-4. `yarn dev` to start the program
-
-### Updating DB with new DAT files
-
-If you need to use newer DOF database, then do the following to generate a new DB from a new set of DAT files.
-
-1. empty the `./faa-data` folder, download the latest [FAA Digital Obstacle File][dof] into the `./faa-data` folder and unzip it
-2. `yarn db:reset` - resets the DB to empty state
-3. `yarn db:seed` - seeds the database with the new DOF `.Dat` files.
-4. `yarn dev` to start the program
+1. Download, install, and start [Docker](https://docker.com). Start postgres container with `docker-compose up -d`.
+2. Decompress the (or [download the latest][dof] DOF zip file in `faa-data`.
+3. `yarn` (to install deps)
+4. `yarn db:reinitialize` - configure and seed postgres db
+5. `yarn dev` to start the program
 
 ## Dev Resources
 
