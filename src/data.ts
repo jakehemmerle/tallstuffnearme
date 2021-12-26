@@ -122,7 +122,7 @@ export const insertDatFileIntoDB = async (path: string): Promise<void> => {
 }
 
 // one way to query objects!
-export const queryTallestNearMe = async (location: DDCoordinates, radius: number, gteHeightFeet: number): Promise<FAAObject[]> => {
+export const queryTallestNearMe = async (location: DDCoordinates, radius: number, gteHeightFeet: number): Promise<FAAObjectWithRelativeLocation[]> => {
     const {
         lattitudeUpperBound,
         lattitudeLowerBound,
@@ -142,22 +142,21 @@ export const queryTallestNearMe = async (location: DDCoordinates, radius: number
             lte: longitudeUpperBound,
             gte: longitudeLowerBound
         },
-
         // double negatives allows eliminating multiple strings from query (I know enum is cleaner but I'm lazy)
         ObstacleType: {
-            contains: "TOWER",
+            // contains: "TOWER",
             not: {
-                contains: "BLDG",
+                // contains: "BLDG",
 
                 not: {
                     not:{
-                        // equals: "TOWER",
+                        equals: "TOWER",
                         not: {
                             not:{
-                                equals: "STACK",
+                                // equals: "STACK",
                                 not: {
                                     not:{
-                                        equals: "WINDMILL",
+                                        // equals: "WINDMILL",
                                         not: {
                                             not:{
                                                 equals: "CATENARY",
@@ -199,14 +198,24 @@ export const queryTallestNearMe = async (location: DDCoordinates, radius: number
         }
 
     }
-
     const orderBy: Prisma.FAAObjectOrderByWithRelationInput = {
         AGL: 'desc'
     }
-
-    return prisma.fAAObject.findMany({
+    const objects: FAAObject[] = await prisma.fAAObject.findMany({
         where,
         orderBy
     });
 
+    const objectsWithDistance: FAAObjectWithRelativeLocation[] = objects.map(FAAObject => {
+        const objectCoordinates: DDCoordinates = {
+            lattitude: FAAObject.Latitude,
+            longitude: FAAObject.Longitude,
+        }
+        return {
+            FAAObject,
+            distanceFromLocation: distanceBetweenPoints(location, objectCoordinates),
+        }
+    })
+
+    return objectsWithDistance.sort((a, b) => (a.distanceFromLocation - b.distanceFromLocation ));
 }

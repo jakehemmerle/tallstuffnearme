@@ -1,11 +1,11 @@
 // import { PrismaClient, Prisma } from '@prisma/client'
-import { _getQueryCoordinates, DD, _QueryLocationParameters, queryTallestNearMe  } from './data';
+import { _getQueryCoordinates, DDCoordinates, _QueryLocationParameters, distanceBetweenPoints } from './data';
 import { readdirSync } from 'fs';
 
 // lat long at 0, 0
 // radius at 10 miles
 test('run getQueryCoordinates with sample values', () => {
-    const location: DD = {
+    const location: DDCoordinates = {
         lattitude: 0,
         longitude: 0,
     };
@@ -15,13 +15,15 @@ test('run getQueryCoordinates with sample values', () => {
     // console.log(queryCoordinates);
 });
 
-test('query db for taller than 600ft objects', async () => {
-    // university of cincinnati
-    const location: DD = {
+test('compute distance between two decimal degree points', async () => {
+    const location: DDCoordinates = {
         lattitude: 39.140115,
         longitude: -84.513876,
     }
-
-    const objects = await queryTallestNearMe(location, 20, 400);
-    console.log(objects);
+    const location2: DDCoordinates = {
+        lattitude: 0,
+        longitude: 0,
+    }
+    
+    console.log(distanceBetweenPoints(location, location2));
 });
