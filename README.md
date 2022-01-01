@@ -4,11 +4,12 @@ This shows you tall stuff around you from the best possible resource available: 
 
 ## Instructions
 
-1. Download, install, and start [Docker](https://docker.com). Start postgres container with `docker-compose up -d`.
-2. Decompress the (or [download the latest][dof] DOF zip file in `faa-data`.
+1. Start a new Postgres instance and set URL in `.env`, or use the provided `docker-compose.yaml`.
+2. Decompress the (or [download the latest][dof] DOF zip file into `faa-data`.
 3. `yarn` (to install deps)
-4. `yarn db:reinitialize` - configure and seed postgres db
-5. `yarn dev` to start the program
+4. `yarn db:reinitialize` - configure DB, parse DAT files, and seed the DB.
+5. Enter your location and radius in `bin/cli.ts`.
+6. `yarn cli` to execute `bin/cli.ts`.
 
 ## Dev Resources
 
