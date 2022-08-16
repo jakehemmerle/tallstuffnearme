@@ -2,14 +2,15 @@
 
 This shows you tall stuff around you from the best possible resource available: the [FAA Digital Obstacle File][dof]
 
-## Instructions
+## Instructions (as of 08/16/2022)
 
-1. Start a new Postgres instance and set URL in `.env`, or use the provided `docker-compose.yaml`.
-2. Decompress the (or [download the latest][dof] DOF zip file into `faa-data`.
-3. `yarn` (to install deps)
-4. `yarn db:reinitialize` - configure DB, parse DAT files, and seed the DB.
-5. Enter your location and radius in `bin/cli.ts`.
-6. `yarn cli` to execute `bin/cli.ts`.
+1. Clone repo with `git clone --depth 1 https://github.com/jakehemmerle/tallstuffnearme`
+2. Start a new Postgres instance and set URL in `.env`, or use the provided `docker-compose.yaml`.
+3. Decompress the (or [download the latest][dof] DOF zip file into `faa-data`.
+4. `yarn` (to install deps)
+5. `yarn db:reinitialize` - configure DB, parse DAT files, and seed the DB.
+6. Enter your location and radius in `bin/cli.ts`.
+7. `yarn cli` to execute `bin/cli.ts`.
 
 ## Dev Resources
 
