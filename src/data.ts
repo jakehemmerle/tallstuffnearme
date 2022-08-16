@@ -1,11 +1,13 @@
 import { readFileSync } from 'fs';
-import { PrismaClient, Prisma, FAAObject } from '@prisma/client';
+import { PrismaClient, Prisma, FAAObject, ObstacleType } from '@prisma/client';
 
 // conversion parameters from: http://wiki.gis.com/wiki/index.php/Decimal_degrees
 const KM_PER_DEGREE = 111.320; // surface distance in km per degree
 const MILES_TO_KM = 1.609344;
 
 const prisma = new PrismaClient();
+
+// let seenObjectTypes = new Set();
 
 /// digital degree
 export type DDCoordinates = {
@@ -66,6 +68,22 @@ export const _DMSStringToDD = (dms: string): number => {
     return dd;
 }
 
+const _ObstacleTypeFromString = (obstacleType: string): ObstacleType => {
+    try {
+        // parse into enum format and check if it's a valid enum
+        let obstacle = obstacleType.replace(/ /g, "_");
+        obstacle = obstacle.replace(/-/g, "");
+        // if (!seenObjectTypes.has(obstacle)) {
+        //     seenObjectTypes.add(obstacle);
+        //     console.log(`${obstacle}`);
+        // }
+        const parsed = ObstacleType[obstacle]
+        return parsed;
+    } catch (e) {
+        return ObstacleType.UNDEFINED;
+    }
+}
+
 const _rawStringToFAAObject = (line: string): Prisma.FAAObjectCreateInput => {
     const currentObject: Prisma.FAAObjectCreateInput = {
         OASNumber: parseInt(line.slice(0, 2).concat(line.slice(3, 10)).trimEnd()),
@@ -75,7 +93,8 @@ const _rawStringToFAAObject = (line: string): Prisma.FAAObjectCreateInput => {
         City: line.slice(18, 34).trimEnd(),
         Latitude: _DMSStringToDD(line.slice(34, 47)),
         Longitude: _DMSStringToDD(line.slice(48, 61)),
-        ObstacleType: line.slice(62, 80).trimEnd(),
+        // this is where we parse the obstacle
+        ObstacleType: _ObstacleTypeFromString(line.slice(62, 80).trimEnd()),
         AGL: parseInt(line.slice(83, 88)),
         AMSL: parseInt(line.slice(89, 94)),
         LT: line.slice(95, 96),
@@ -95,11 +114,11 @@ export const distanceBetweenPoints = (p1: DDCoordinates, p2: DDCoordinates): num
     const latDelta = Math.abs(p1.lattitude - p2.lattitude);
     const longDelta = Math.abs(p1.longitude - p2.longitude);
 
-    const distanceInDD = Math.sqrt(latDelta**2 + longDelta**2); // pythagorean theorum
+    const distanceInDD = Math.sqrt(latDelta ** 2 + longDelta ** 2); // pythagorean theorum
 
     return _degreesToMiles(distanceInDD);
-    
-} 
+
+}
 
 // used for adding .Dat files to the PostgresDB
 export const insertDatFileIntoDB = async (path: string): Promise<void> => {
@@ -112,7 +131,7 @@ export const insertDatFileIntoDB = async (path: string): Promise<void> => {
     const insertableObjects: Prisma.FAAObjectCreateInput[] = cleanedStrings.map((rawLocation) => _rawStringToFAAObject(rawLocation));
 
     // json into db
-    console.log(`found ${insertableObjects.length} objects. inserting into db...`);
+    // console.log(`found ${insertableObjects.length} objects. inserting into db...`);
 
     await prisma.fAAObject.createMany({
         data: insertableObjects,
@@ -149,48 +168,48 @@ export const queryTallestNearMe = async (location: DDCoordinates, radius: number
                 // contains: "BLDG",
 
                 not: {
-                    not:{
-                        equals: "TOWER",
+                    not: {
+                        // equals: "TOWER",
                         not: {
-                            not:{
+                            not: {
                                 // equals: "STACK",
                                 not: {
-                                    not:{
+                                    not: {
                                         // equals: "WINDMILL",
                                         not: {
-                                            not:{
-                                                equals: "CATENARY",
+                                            not: {
+                                                // equals: "CATENARY",
                                                 not: {
-                                                    not:{
-                                                        contains: "TWR",
+                                                    not: {
+                                                        // contains: "TWR",
                                                         not: {
-                                                            not:{
+                                                            not: {
                                                                 // contains: "BRIDGE",
                                                                 not: {
-                                                                    not:{
-                                                                        contains: "MET",
-                                                                        
+                                                                    not: {
+                                                                        // contains: "MET",
+
                                                                     }
-                                                                    
+
                                                                 }
-                                                                
+
                                                             }
-                                                            
+
                                                         }
-                                                        
+
                                                     }
-                                                    
+
                                                 }
-                                                
+
                                             }
-                                            
+
                                         }
-                                        
+
                                     }
-                                    
+
                                 }
                             }
-                            
+
                         }
                     }
                 }
@@ -217,5 +236,5 @@ export const queryTallestNearMe = async (location: DDCoordinates, radius: number
         }
     })
 
-    return objectsWithDistance.sort((a, b) => (a.distanceFromLocation - b.distanceFromLocation ));
+    return objectsWithDistance.sort((a, b) => (a.distanceFromLocation - b.distanceFromLocation));
 }

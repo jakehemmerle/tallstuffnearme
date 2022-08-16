@@ -11,23 +11,77 @@ datasource db {
 }
 
 model FAAObject {
-    OASNumber   Int @id
-    Verified    String
-    Country     String
-    State       String
-    City        String
-    Latitude    Float
-    Longitude   Float
-    ObstacleType String
-    AGL         Int
-    AMSL        Int
-    LT          String
-    H           String
-    AccV        String
-    MarInd      String
-    FAAStudyNumber String
-    Action      String
-    JDate       String
+  OASNumber      Int          @id
+  Verified       String
+  Country        String
+  State          String
+  City           String
+  Latitude       Float
+  Longitude      Float
+  ObstacleType   ObstacleType @default(UNDEFINED)
+  AGL            Int
+  AMSL           Int
+  LT             String
+  H              String
+  AccV           String
+  MarInd         String
+  FAAStudyNumber String
+  Action         String
+  JDate          String
+}
+
+enum ObstacleType {
+  RIG
+  STACK
+  BLDG
+  TOWER
+  POLE
+  ELEC_SYS
+  TL_TWR
+  TANK
+  BRIDGE
+  SIGN
+  REFINERY
+  FENCE
+  PLANT
+  GEN_UTIL
+  ELEVATOR
+  ANTENNA
+  NAVAID
+  CTRL_TWR
+  SILO
+  UTILITY_POLE
+  CRANE
+  BLDGTWR
+  VERTICAL_STRUCTURE
+  AG_EQUIP
+  CATENARY
+  WINDSOCK
+  DOME
+  SOLAR_PANELS
+  MET
+  AMUSEMENT_PARK
+  MONUMENT
+  STADIUM
+  COOL_TWR
+  DAM
+  WINDMILL
+  LANDFILL
+  POWER_PLANT
+  TRAMWAY
+  BALLOON
+  SPIRE
+  WALL
+  HEAT_COOL_SYSTEM
+  NATURAL_GAS_SYSTEM
+  LGTHOUSE
+  PIPELINE_PIPE
+  HANGAR
+  ARCH
+  GRAIN_ELEVATOR
+  GATE
+  WIND_INDICATOR
+  UNDEFINED
 }
 
 // these are for the test db
