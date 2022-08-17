@@ -7,8 +7,6 @@ const MILES_TO_KM = 1.609344;
 
 const prisma = new PrismaClient();
 
-// let seenObjectTypes = new Set();
-
 /// digital degree
 export type DDCoordinates = {
     lattitude: number,
@@ -70,15 +68,10 @@ export const _DMSStringToDD = (dms: string): number => {
 
 const _ObstacleTypeFromString = (obstacleType: string): ObstacleType => {
     try {
-        // parse into enum format and check if it's a valid enum
+        // parse into format that enum can use directly and check if it's a valid enum
         let obstacle = obstacleType.replace(/ /g, "_");
         obstacle = obstacle.replace(/-/g, "");
-        // if (!seenObjectTypes.has(obstacle)) {
-        //     seenObjectTypes.add(obstacle);
-        //     console.log(`${obstacle}`);
-        // }
-        const parsed = ObstacleType[obstacle]
-        return parsed;
+        return ObstacleType[obstacle];
     } catch (e) {
         return ObstacleType.UNDEFINED;
     }
@@ -93,7 +86,6 @@ const _rawStringToFAAObject = (line: string): Prisma.FAAObjectCreateInput => {
         City: line.slice(18, 34).trimEnd(),
         Latitude: _DMSStringToDD(line.slice(34, 47)),
         Longitude: _DMSStringToDD(line.slice(48, 61)),
-        // this is where we parse the obstacle
         ObstacleType: _ObstacleTypeFromString(line.slice(62, 80).trimEnd()),
         AGL: parseInt(line.slice(83, 88)),
         AMSL: parseInt(line.slice(89, 94)),
@@ -131,7 +123,7 @@ export const insertDatFileIntoDB = async (path: string): Promise<void> => {
     const insertableObjects: Prisma.FAAObjectCreateInput[] = cleanedStrings.map((rawLocation) => _rawStringToFAAObject(rawLocation));
 
     // json into db
-    // console.log(`found ${insertableObjects.length} objects. inserting into db...`);
+    console.log(`found ${insertableObjects.length} objects. inserting into db...`);
 
     await prisma.fAAObject.createMany({
         data: insertableObjects,

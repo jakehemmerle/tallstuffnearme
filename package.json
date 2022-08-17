@@ -5,13 +5,12 @@
   "author": "Jake Hemmerle <jakehemmerle@protonmail.com>",
   "license": "MIT",
   "scripts": {
-    "cli": "ts-node ./bin/cli.ts",
+    "dev": "ts-node ./src/index.ts",
     "test": "jest",
-    "db:reset": "prisma db push --force-reset; prisma generate",
     "db:reinitialize": "yarn db:reset && yarn db:seed",
+    "db:reset": "prisma db push --force-reset; prisma generate",
     "db:seed": "ts-node ./scripts/seedDB.ts",
-    "db:studio": "prisma studio",
-    "dev": "ts-node ./src/index.ts"
+    "db:studio": "prisma studio"
   },
   "devDependencies": {
     "@types/jest": "^27.0.3",
@@ -24,6 +23,7 @@
   },
   "dependencies": {
     "@prisma/client": "^4.2.1",
+    "express": "^4.18.1",
     "ts-jest": "^27.1.2",
     "yargs": "^17.3.1"
   },

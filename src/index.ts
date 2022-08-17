@@ -1,22 +1,18 @@
-import { PrismaClient, Prisma } from '@prisma/client'
-import { insertDatFileIntoDB } from './data';
+// starts the webserver, routes etc.
 
-const prisma = new PrismaClient()
+import createApplication from 'express';
 
-// A `main` function so that you can use async/await
-async function populateDB() {
-  await insertDatFileIntoDB("./faa-data/39-OH.Dat");
-  console.log("complete oh!");
-  await insertDatFileIntoDB("./faa-data/21-KY.Dat");
-  console.log("complete ky!");
-  await insertDatFileIntoDB("./faa-data/18-IN.Dat");
-  console.log("complete in!");
-}
+const app = createApplication();
+const port = 3000;
 
-populateDB()
-  .catch((e) => {
-    throw e
-  })
-  .finally(async () => {
-    await prisma.$disconnect()
-  })
+app.get('/', (req, res) => {
+  res.send('Hello World!')
+})
+
+app.get('/objects', (req, res) => {
+  res.send('Objects here')
+})
+
+app.listen(port, () => {
+  console.log(`Tall shit near you can be found on port ${port}...`)
+})

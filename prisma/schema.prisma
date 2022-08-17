@@ -121,3 +121,45 @@ enum Role {
   USER
   ADMIN
 }
+
+// ObstacleType enum was generated with this shit 
+
+// const _ObstacleTypeFromString = (obstacleType: string): ObstacleType => {
+//     try {
+//         // parse into enum format and check if it's a valid enum
+//         let obstacle = obstacleType.replace(/ /g, "_");
+//         obstacle = obstacle.replace(/-/g, "");
+//         // if (!seenObjectTypes.has(obstacle)) {
+//         //     seenObjectTypes.add(obstacle);
+//         //     console.log(`${obstacle}`);
+//         // }
+//         const parsed = ObstacleType[obstacle]
+//         return parsed;
+//     } catch (e) {
+//         return ObstacleType.UNDEFINED;
+//     }
+// }
+
+// const _rawStringToFAAObject = (line: string): Prisma.FAAObjectCreateInput => {
+//     const currentObject: Prisma.FAAObjectCreateInput = {
+//         OASNumber: parseInt(line.slice(0, 2).concat(line.slice(3, 10)).trimEnd()),
+//         Verified: line.slice(10, 11),
+//         Country: line.slice(12, 14),
+//         State: line.slice(15, 17),
+//         City: line.slice(18, 34).trimEnd(),
+//         Latitude: _DMSStringToDD(line.slice(34, 47)),
+//         Longitude: _DMSStringToDD(line.slice(48, 61)),
+//         ObstacleType: _ObstacleTypeFromString(line.slice(62, 80).trimEnd()),
+//         AGL: parseInt(line.slice(83, 88)),
+//         AMSL: parseInt(line.slice(89, 94)),
+//         LT: line.slice(95, 96),
+//         H: line.slice(97, 98),
+//         AccV: line.slice(99, 100),
+//         MarInd: line.slice(101, 102),
+//         FAAStudyNumber: line.slice(103, 117),
+//         Action: line.slice(118, 119),
+//         JDate: line.slice(120, 127)
+//     };
+
+//     return currentObject;
+// }
