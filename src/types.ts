@@ -2,7 +2,7 @@ import { FAAObject, ObjectType } from '@prisma/client';
 
 // HTTP response is usually is an array of these
 type FAAObjectWithRelativeLocation = {
-    FAAObject,
+    FAAObject: FAAObject,
     distanceFromLocation: number,
 }
 
