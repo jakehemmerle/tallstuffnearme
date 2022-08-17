@@ -1,4 +1,3 @@
-import { readdirSync } from 'fs';
 import { _getQueryCoordinates, _QueryLocationParameters, _distanceBetweenPoints } from './data';
 import { Coordinates } from './types';
 

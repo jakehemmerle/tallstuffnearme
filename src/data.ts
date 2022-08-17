@@ -127,5 +127,3 @@ export const _insertDatFileIntoDB = async (path: string): Promise<void> => {
 
     return Promise.resolve();
 }
-
-// one way to query objects!

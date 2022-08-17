@@ -1,4 +1,4 @@
-import { FAAObject, ObjectType, Prisma, PrismaClient } from "@prisma/client";
+import { FAAObject, Prisma, PrismaClient } from "@prisma/client";
 import { _distanceBetweenPoints, _getQueryCoordinates } from "./data";
 import { Coordinates, FAAObjectWithRelativeLocation, ObjectQueryRequest } from "./types";
 
