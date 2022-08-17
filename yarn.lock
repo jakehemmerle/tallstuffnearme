@@ -1913,6 +1913,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"express-validator@npm:^6.14.2":
+  version: 6.14.2
+  resolution: "express-validator@npm:6.14.2"
+  dependencies:
+    lodash: ^4.17.21
+    validator: ^13.7.0
+  checksum: f19641a8f8bde39ebf9418e8798c22736ffe1c90081f97a4b66d6d0f185bce2c20cbcc170d21c5d10f8fd410bb8de38c31592021be4306b9936bc3c566741dc0
+  languageName: node
+  linkType: hard
+
 "express@npm:^4.18.1":
   version: 4.18.1
   resolution: "express@npm:4.18.1"
@@ -3095,7 +3105,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lodash@npm:^4.7.0":
+"lodash@npm:^4.17.21, lodash@npm:^4.7.0":
   version: 4.17.21
   resolution: "lodash@npm:4.17.21"
   checksum: eb835a2e51d381e561e508ce932ea50a8e5a68f4ebdd771ea240d3048244a8d13658acbd502cd4829768c56f2e16bdd4340b9ea141297d472517b83868e677f7
@@ -4146,24 +4156,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"swagger-ui-dist@npm:>=4.11.0":
-  version: 4.13.2
-  resolution: "swagger-ui-dist@npm:4.13.2"
-  checksum: 1b582c158cd4c2e6a83c5405a4777d0beec7aa02fa2683fe4e82c28bb665260fc3067f7ab6ed5085301a60b3df4e3ee42045eaf491c847c711b16ba03d487d83
-  languageName: node
-  linkType: hard
-
-"swagger-ui-express@npm:^4.5.0":
-  version: 4.5.0
-  resolution: "swagger-ui-express@npm:4.5.0"
-  dependencies:
-    swagger-ui-dist: ">=4.11.0"
-  peerDependencies:
-    express: ">=4.0.0"
-  checksum: 67f1725bceea2142554f57b50e7ac03acb55f20f893da5a68bc806d4fec6b5dffa1b59e3aba09ac0e50f049f3719f71290afee556a0957e11ee13a27e652816d
-  languageName: node
-  linkType: hard
-
 "symbol-tree@npm:^3.2.4":
   version: 3.2.4
   resolution: "symbol-tree@npm:3.2.4"
@@ -4182,9 +4174,9 @@ __metadata:
     "@types/yargs": ^17.0.8
     dotenv: ^16.0.1
     express: ^4.18.1
+    express-validator: ^6.14.2
     jest: ^27.4.5
     prisma: ^4.2.1
-    swagger-ui-express: ^4.5.0
     ts-jest: ^27.1.2
     ts-node: ^10.4.0
     typescript: ^4.5.4
@@ -4470,6 +4462,13 @@ __metadata:
     convert-source-map: ^1.6.0
     source-map: ^0.7.3
   checksum: c7dabf9567e0c210b24d0720e553803cbe1ff81edb1ec7f2080eb4be01ed081a40286cc9f4aaa86d1bf8d57840cefae8fdf326b7cb8faa316ba50c7b948030d4
+  languageName: node
+  linkType: hard
+
+"validator@npm:^13.7.0":
+  version: 13.7.0
+  resolution: "validator@npm:13.7.0"
+  checksum: 2b83283de1222ca549a7ef57f46e8d49c6669213348db78b7045bce36a3b5843ff1e9f709ebf74574e06223461ee1f264f8cc9a26a0060a79a27de079d8286ef
   languageName: node
   linkType: hard
 

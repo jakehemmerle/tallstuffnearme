@@ -5,12 +5,16 @@ import { Coordinates, FAAObjectWithRelativeLocation, ObjectQueryRequest } from "
 const prisma = new PrismaClient();
 
 export const parseRequestBody = (input): ObjectQueryRequest => {
+    const { lattitude, longitude, radius, minHeight, maxHeight, excludeObjectTypes } = input;
     return {
-        location: input.location,
-        radius: input.radius ? input.radius : 10,
-        minHeight: input.minHeight ? input.minHeight : 100,
-        maxHeight: input.maxHeight,
-        excludeObjectTypes: input.excludeObjectTypes,
+        location: {
+            longitude,
+            lattitude
+        },
+        radius: radius | 10,
+        minHeight: minHeight | 100,
+        maxHeight,
+        excludeObjectTypes,
     }
 }
 

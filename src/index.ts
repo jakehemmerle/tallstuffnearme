@@ -1,6 +1,7 @@
 // starts the webserver, routes etc.
 
 import express, { Request, Response, json } from 'express';
+import { body, validationResult } from 'express-validator';
 import { ObjectQueryRequest } from './types';
 import { parseRequestBody, defaultQuery, searchObjects } from './controller';
 
@@ -13,11 +14,22 @@ app.use(json());
 /// ROUTES ///
 
 // PROD query function
-app.get('/objects', async (req: Request, res: Response) => {
-  const query: ObjectQueryRequest = parseRequestBody(req.body);
-  searchObjects(query)
-    .then((result) => res.json(result));
-})
+app.get('/objects',
+  body("lattitude").isNumeric(),
+  body("longitude").isNumeric(),
+  body("radius").isInt({ lt: 501, gt: 0 }),
+  async (req: Request, res: Response) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const query: ObjectQueryRequest = parseRequestBody(req.body);
+    console.log(query);
+    searchObjects(query)
+      .then((result) => res.json(result)).catch(() => res.status(400).json({ error: "malformed input" }));
+  }
+)
 
 // DEV ping
 app.get('/ping', (_, res: Response) => res.send('pong'));
