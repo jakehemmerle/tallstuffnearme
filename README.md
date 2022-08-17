@@ -47,9 +47,9 @@ My shitty mock of Frontend requests will be done in the following format-ish:
 // GET request with following JSON payload in body
 {
     location: DDCoordinate, // decimal degree coordinate, DDCoordinate is in `./src/data.ts`
-    radius: number,  // integer in miles
-    minHeight?: number // integer in feet
-    maxHeight?: number // integer in feet
+    radius?: number,  // integer in miles, default to 10
+    minHeight?: number // integer in feet, default to 100ft
+    maxHeight?: number // integer in feet, default is null
     excludedObjects?: ObjectType[],  // enum of objects to ignore in search; ObjectType from @prisma/client
 }
 

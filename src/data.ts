@@ -133,7 +133,7 @@ export const insertDatFileIntoDB = async (path: string): Promise<void> => {
 }
 
 // one way to query objects!
-export const queryTallestNearMe = async (location: DDCoordinates, radius: number, gteHeightFeet: number): Promise<FAAObjectWithRelativeLocation[]> => {
+export const queryTallestNearMe = async (location: DDCoordinates, radius: number, gteHeightFeet?: number, excludedObjectTypes?: ObjectType[]): Promise<FAAObjectWithRelativeLocation[]> => {
     const {
         lattitudeUpperBound,
         lattitudeLowerBound,
@@ -155,60 +155,10 @@ export const queryTallestNearMe = async (location: DDCoordinates, radius: number
         },
         // double negatives allows eliminating multiple strings from query (I know enum is cleaner but I'm lazy)
         ObjectType: {
-            // contains: "TOWER",
-            not: {
-                // contains: "BLDG",
-
-                not: {
-                    not: {
-                        // equals: "TOWER",
-                        not: {
-                            not: {
-                                // equals: "STACK",
-                                not: {
-                                    not: {
-                                        // equals: "WINDMILL",
-                                        not: {
-                                            not: {
-                                                // equals: "CATENARY",
-                                                not: {
-                                                    not: {
-                                                        // contains: "TWR",
-                                                        not: {
-                                                            not: {
-                                                                // contains: "BRIDGE",
-                                                                not: {
-                                                                    not: {
-                                                                        // contains: "MET",
-
-                                                                    }
-
-                                                                }
-
-                                                            }
-
-                                                        }
-
-                                                    }
-
-                                                }
-
-                                            }
-
-                                        }
-
-                                    }
-
-                                }
-                            }
-
-                        }
-                    }
-                }
-            }
+            notIn: excludedObjectTypes
         }
-
     }
+    console.log(where);
     const orderBy: Prisma.FAAObjectOrderByWithRelationInput = {
         AGL: 'desc'
     }
