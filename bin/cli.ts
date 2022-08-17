@@ -1,7 +1,7 @@
 // This is not used for anything yet, but may be in the future
 
 import yargs from 'yargs/yargs';
-import { DDCoordinates, queryTallestNearMe } from '../src/data';
+import { Coordinates, searchObjects } from '../src/data';
 
 // var argv = yargs(process.argv.slice(2))
 //     .usage('Usage: $0 <command> [options]')
@@ -34,7 +34,7 @@ import { DDCoordinates, queryTallestNearMe } from '../src/data';
 
 const main = async () => {
 
-    const location: DDCoordinates = {
+    const location: Coordinates = {
         lattitude: 39.140115,
         longitude: -84.513876,
     }
@@ -43,7 +43,7 @@ const main = async () => {
 
     const height: number = 250;
 
-    const objects = await queryTallestNearMe(location, radiusInMiles, height);
+    const objects = await searchObjects(location, radiusInMiles, height);
     console.log(objects);
 }
 

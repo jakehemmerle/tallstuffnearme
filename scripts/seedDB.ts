@@ -1,5 +1,5 @@
-import { PrismaClient, Prisma } from '@prisma/client'
-import { insertDatFileIntoDB } from '../src/data';
+import { PrismaClient } from '@prisma/client'
+import { _insertDatFileIntoDB } from '../src/data';
 import { readdirSync } from 'fs';
 
 const prisma = new PrismaClient()
@@ -15,7 +15,7 @@ async function populateDB() {
   for (let fileName of fileNames) {
     const fullName = `./faa-data/${fileName}`
     console.log(`adding ${fullName}`)
-    await insertDatFileIntoDB(fullName);
+    await _insertDatFileIntoDB(fullName);
   }
 }
 

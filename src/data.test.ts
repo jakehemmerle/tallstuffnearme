@@ -1,29 +1,16 @@
-// import { PrismaClient, Prisma } from '@prisma/client'
-import { _getQueryCoordinates, DDCoordinates, _QueryLocationParameters, distanceBetweenPoints } from './data';
 import { readdirSync } from 'fs';
-
-// lat long at 0, 0
-// radius at 10 miles
-test('run getQueryCoordinates with sample values', () => {
-    const location: DDCoordinates = {
-        lattitude: 0,
-        longitude: 0,
-    };
-
-    const queryCoordinates: _QueryLocationParameters = _getQueryCoordinates(location, 10);
-
-    // console.log(queryCoordinates);
-});
+import { _getQueryCoordinates, _QueryLocationParameters, _distanceBetweenPoints } from './data';
+import { Coordinates } from './types';
 
 test('compute distance between two decimal degree points', async () => {
-    const location: DDCoordinates = {
+    const location: Coordinates = {
         lattitude: 39.140115,
         longitude: -84.513876,
     }
-    const location2: DDCoordinates = {
+    const location2: Coordinates = {
         lattitude: 0,
         longitude: 0,
     }
-    
-    console.log(distanceBetweenPoints(location, location2));
+
+    console.log(_distanceBetweenPoints(location, location2));
 });

@@ -1,5 +1,9 @@
+// This file includes types, functions, and helpers for querying FAA data with prisma
+
 import { readFileSync } from 'fs';
-import { PrismaClient, Prisma, FAAObject, ObjectType } from '@prisma/client';
+import { PrismaClient, Prisma, ObjectType } from '@prisma/client';
+import { Coordinates } from './types'
+
 
 // conversion parameters from: http://wiki.gis.com/wiki/index.php/Decimal_degrees
 const KM_PER_DEGREE = 111.320; // surface distance in km per degree
@@ -7,14 +11,8 @@ const MILES_TO_KM = 1.609344;
 
 const prisma = new PrismaClient();
 
-/// digital degree
-export type DDCoordinates = {
-    lattitude: number,
-    longitude: number,
-};
-
 export type _QueryLocationParameters = {
-    location: DDCoordinates
+    location: Coordinates
     radiusInMiles: number,
     lattitudeUpperBound: number,
     lattitudeLowerBound: number,
@@ -22,28 +20,24 @@ export type _QueryLocationParameters = {
     longitudeLowerBound: number,
 }
 
-export type FAAObjectWithRelativeLocation = {
-    FAAObject,
-    distanceFromLocation: number,
-}
-
 const _degreesToMiles = (degrees: number): number => {
     return degrees * KM_PER_DEGREE / MILES_TO_KM;
 }
 
 const _milesToDegrees = (miles: number): number => {
-    return miles * MILES_TO_KM / KM_PER_DEGREE // 113,320 is 
+    return miles * MILES_TO_KM / KM_PER_DEGREE;
 }
 
-export const _getQueryCoordinates = (location: DDCoordinates, radiusInMiles: number): _QueryLocationParameters => {
-    const decimalDistance = _milesToDegrees(radiusInMiles);
+// gets coordinate range for querying objects from a lat/long and radius
+export const _getQueryCoordinates = (location: Coordinates, radiusInMiles: number): _QueryLocationParameters => {
+    const radiusAsDegrees = _milesToDegrees(radiusInMiles);
     return {
         location,
         radiusInMiles,
-        lattitudeUpperBound: location.lattitude + decimalDistance,
-        lattitudeLowerBound: location.lattitude - decimalDistance,
-        longitudeUpperBound: location.longitude + decimalDistance,
-        longitudeLowerBound: location.longitude - decimalDistance
+        lattitudeUpperBound: location.lattitude + radiusAsDegrees,
+        lattitudeLowerBound: location.lattitude - radiusAsDegrees,
+        longitudeUpperBound: location.longitude + radiusAsDegrees,
+        longitudeLowerBound: location.longitude - radiusAsDegrees
     }
 }
 
@@ -66,6 +60,7 @@ export const _DMSStringToDD = (dms: string): number => {
     return dd;
 }
 
+// Parse an object type as string to ObjectType enum
 const _ObjectTypeFromString = (objectType: string): ObjectType => {
     try {
         // parse into format that enum can use directly and check if it's a valid enum
@@ -77,6 +72,7 @@ const _ObjectTypeFromString = (objectType: string): ObjectType => {
     }
 }
 
+// Parse a line as a string from a .Dat file into a DB object for Prisma to insert
 const _rawStringToFAAObject = (line: string): Prisma.FAAObjectCreateInput => {
     const currentObject: Prisma.FAAObjectCreateInput = {
         OASNumber: parseInt(line.slice(0, 2).concat(line.slice(3, 10)).trimEnd()),
@@ -102,7 +98,7 @@ const _rawStringToFAAObject = (line: string): Prisma.FAAObjectCreateInput => {
 }
 
 // compute the distance between two decimal degree points
-export const distanceBetweenPoints = (p1: DDCoordinates, p2: DDCoordinates): number => {
+export const _distanceBetweenPoints = (p1: Coordinates, p2: Coordinates): number => {
     const latDelta = Math.abs(p1.lattitude - p2.lattitude);
     const longDelta = Math.abs(p1.longitude - p2.longitude);
 
@@ -112,8 +108,8 @@ export const distanceBetweenPoints = (p1: DDCoordinates, p2: DDCoordinates): num
 
 }
 
-// used for adding .Dat files to the PostgresDB
-export const insertDatFileIntoDB = async (path: string): Promise<void> => {
+// parse and insert .Dat file to a Postgres DB
+export const _insertDatFileIntoDB = async (path: string): Promise<void> => {
     // parse raw text
     const rawText: string = readFileSync(path, { encoding: 'utf8' });
     const rawLines: string[] = rawText.split(/\r?\n/);
@@ -133,50 +129,3 @@ export const insertDatFileIntoDB = async (path: string): Promise<void> => {
 }
 
 // one way to query objects!
-export const queryTallestNearMe = async (location: DDCoordinates, radius: number, gteHeightFeet?: number, excludedObjectTypes?: ObjectType[]): Promise<FAAObjectWithRelativeLocation[]> => {
-    const {
-        lattitudeUpperBound,
-        lattitudeLowerBound,
-        longitudeUpperBound,
-        longitudeLowerBound,
-    } = _getQueryCoordinates(location, radius);
-
-    const where: Prisma.FAAObjectWhereInput = {
-        AGL: {
-            gte: gteHeightFeet
-        },
-        Latitude: {
-            lte: lattitudeUpperBound,
-            gte: lattitudeLowerBound
-        },
-        Longitude: {
-            lte: longitudeUpperBound,
-            gte: longitudeLowerBound
-        },
-        // double negatives allows eliminating multiple strings from query (I know enum is cleaner but I'm lazy)
-        ObjectType: {
-            notIn: excludedObjectTypes
-        }
-    }
-    console.log(where);
-    const orderBy: Prisma.FAAObjectOrderByWithRelationInput = {
-        AGL: 'desc'
-    }
-    const objects: FAAObject[] = await prisma.fAAObject.findMany({
-        where,
-        orderBy
-    });
-
-    const objectsWithDistance: FAAObjectWithRelativeLocation[] = objects.map(FAAObject => {
-        const objectCoordinates: DDCoordinates = {
-            lattitude: FAAObject.Latitude,
-            longitude: FAAObject.Longitude,
-        }
-        return {
-            FAAObject,
-            distanceFromLocation: distanceBetweenPoints(location, objectCoordinates),
-        }
-    })
-
-    return objectsWithDistance.sort((a, b) => (a.distanceFromLocation - b.distanceFromLocation));
-}
