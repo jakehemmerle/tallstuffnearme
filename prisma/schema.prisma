@@ -11,14 +11,14 @@ datasource db {
 }
 
 model FAAObject {
-  OASNumber      Int          @id
+  OASNumber      Int        @id
   Verified       String
   Country        String
   State          String
   City           String
   Latitude       Float
   Longitude      Float
-  ObstacleType   ObstacleType @default(UNDEFINED)
+  ObjectType     ObjectType @default(UNDEFINED)
   AGL            Int
   AMSL           Int
   LT             String
@@ -30,7 +30,7 @@ model FAAObject {
   JDate          String
 }
 
-enum ObstacleType {
+enum ObjectType {
   RIG
   STACK
   BLDG
@@ -122,21 +122,21 @@ enum Role {
   ADMIN
 }
 
-// ObstacleType enum was generated with this shit 
+// ObjectType enum was generated with this shit 
 
-// const _ObstacleTypeFromString = (obstacleType: string): ObstacleType => {
+// const _ObjectTypeFromString = (ObjectType: string): ObjectType => {
 //     try {
 //         // parse into enum format and check if it's a valid enum
-//         let obstacle = obstacleType.replace(/ /g, "_");
+//         let obstacle = ObjectType.replace(/ /g, "_");
 //         obstacle = obstacle.replace(/-/g, "");
 //         // if (!seenObjectTypes.has(obstacle)) {
 //         //     seenObjectTypes.add(obstacle);
 //         //     console.log(`${obstacle}`);
 //         // }
-//         const parsed = ObstacleType[obstacle]
+//         const parsed = ObjectType[obstacle]
 //         return parsed;
 //     } catch (e) {
-//         return ObstacleType.UNDEFINED;
+//         return ObjectType.UNDEFINED;
 //     }
 // }
 
@@ -149,7 +149,7 @@ enum Role {
 //         City: line.slice(18, 34).trimEnd(),
 //         Latitude: _DMSStringToDD(line.slice(34, 47)),
 //         Longitude: _DMSStringToDD(line.slice(48, 61)),
-//         ObstacleType: _ObstacleTypeFromString(line.slice(62, 80).trimEnd()),
+//         ObjectType: _ObjectTypeFromString(line.slice(62, 80).trimEnd()),
 //         AGL: parseInt(line.slice(83, 88)),
 //         AMSL: parseInt(line.slice(89, 94)),
 //         LT: line.slice(95, 96),

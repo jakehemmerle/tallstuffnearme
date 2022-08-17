@@ -1,5 +1,5 @@
 import { readFileSync } from 'fs';
-import { PrismaClient, Prisma, FAAObject, ObstacleType } from '@prisma/client';
+import { PrismaClient, Prisma, FAAObject, ObjectType } from '@prisma/client';
 
 // conversion parameters from: http://wiki.gis.com/wiki/index.php/Decimal_degrees
 const KM_PER_DEGREE = 111.320; // surface distance in km per degree
@@ -66,14 +66,14 @@ export const _DMSStringToDD = (dms: string): number => {
     return dd;
 }
 
-const _ObstacleTypeFromString = (obstacleType: string): ObstacleType => {
+const _ObjectTypeFromString = (objectType: string): ObjectType => {
     try {
         // parse into format that enum can use directly and check if it's a valid enum
-        let obstacle = obstacleType.replace(/ /g, "_");
+        let obstacle = objectType.replace(/ /g, "_");
         obstacle = obstacle.replace(/-/g, "");
-        return ObstacleType[obstacle];
+        return ObjectType[obstacle];
     } catch (e) {
-        return ObstacleType.UNDEFINED;
+        return ObjectType.UNDEFINED;
     }
 }
 
@@ -86,7 +86,7 @@ const _rawStringToFAAObject = (line: string): Prisma.FAAObjectCreateInput => {
         City: line.slice(18, 34).trimEnd(),
         Latitude: _DMSStringToDD(line.slice(34, 47)),
         Longitude: _DMSStringToDD(line.slice(48, 61)),
-        ObstacleType: _ObstacleTypeFromString(line.slice(62, 80).trimEnd()),
+        ObjectType: _ObjectTypeFromString(line.slice(62, 80).trimEnd()),
         AGL: parseInt(line.slice(83, 88)),
         AMSL: parseInt(line.slice(89, 94)),
         LT: line.slice(95, 96),
@@ -154,7 +154,7 @@ export const queryTallestNearMe = async (location: DDCoordinates, radius: number
             gte: longitudeLowerBound
         },
         // double negatives allows eliminating multiple strings from query (I know enum is cleaner but I'm lazy)
-        ObstacleType: {
+        ObjectType: {
             // contains: "TOWER",
             not: {
                 // contains: "BLDG",

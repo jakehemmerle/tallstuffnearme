@@ -36,3 +36,26 @@ A: Yes, it is in the public domain. There are no restrictions on how you may use
 Seem the [FAQ here](https://www.faa.gov/air_traffic/flight_info/aeronav/obst_data/doffaqs/)].
 
 [dof]: https://www.faa.gov/air_traffic/flight_info/aeronav/digital_products/dof/
+
+----
+
+## TODO
+
+My shitty mock of Frontend requests will be done in the following format-ish:
+
+```ts
+// GET request with following JSON payload in body
+{
+    location: DDCoordinate, // decimal degree coordinate, DDCoordinate is in `./src/data.ts`
+    radius: number,  // integer in miles
+    minHeight?: number // integer in feet
+    maxHeight?: number // integer in feet
+    excludedObjects?: ObjectType[],  // enum of objects to ignore in search; ObjectType from @prisma/client
+}
+
+// response
+FAAObjectWithRelativeLocation[]
+```
+
+- `FAAObject`, `ObjectType` in `@prisma/client` (be sure to run `yarn prisma generate` to generate `client`)
+- `FAAObjectWithRelativeLocation` and ` in `./src/data.ts`
