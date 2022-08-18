@@ -1,16 +1,39 @@
 # tallstuffnearme
 
-This shows you tall stuff around you from the best possible resource available: the [FAA Digital Obstacle File][dof]
+This shows you tall stuff around you from the best possible resource available: the [FAA Digital Obstacle File][dof];
 
-## Instructions (as of 08/16/2022)
+## Setup
 
 1. Clone repo with `git clone --depth 1 https://github.com/jakehemmerle/tallstuffnearme`
 2. Start a new Postgres instance and set URL in `.env`, or use the provided `docker-compose.yaml`.
 3. Decompress the (or [download the latest][dof] DOF zip file into `faa-data`.
 4. `yarn` (to install deps)
 5. `yarn db:reinitialize` - configure DB, parse DAT files, and seed the DB.
-6. Enter your location and radius in `bin/cli.ts`.
-7. `yarn cli` to execute `bin/cli.ts`.
+
+## Usage: Generate GeoJSON Data
+
+### Write to File
+
+Set your search parameters and stuff in `src/geojson.ts` and then run `yarn geojson`. This will write your output to a file `geojson.json`
+
+## Serve via webserver
+
+Run `yarn dev` to start the webserver. The `GET /object` endpoint will return a GeoJSON feature collection based on the query parameters you provide it. Example:
+
+```ts
+// GET /object with following JSON payload in body
+{
+    latitude: number, // decimal degrees
+    longitude: number, // decimal degrees
+    radius?: number,  // integer in miles, default to 10
+    minHeight?: number // integer in feet, default to 100ft
+    maxHeight?: number // integer in feet, default is null
+    excludedObjects?: ObjectType[],  // enum of objects to ignore in search; ObjectType from @prisma/client
+}
+
+// response is a geojson feature collection
+FeatureCollection<Point, ObjectGeoJsonProperties>
+```
 
 ## Dev Resources
 
@@ -38,24 +61,6 @@ Seem the [FAQ here](https://www.faa.gov/air_traffic/flight_info/aeronav/obst_dat
 [dof]: https://www.faa.gov/air_traffic/flight_info/aeronav/digital_products/dof/
 
 ----
-
-## TODO
-
-My shitty mock of Frontend requests will be done in the following format-ish:
-
-```ts
-// GET request with following JSON payload in body
-{
-    location: DDCoordinate, // decimal degree coordinate, DDCoordinate is in `./src/data.ts`
-    radius?: number,  // integer in miles, default to 10
-    minHeight?: number // integer in feet, default to 100ft
-    maxHeight?: number // integer in feet, default is null
-    excludedObjects?: ObjectType[],  // enum of objects to ignore in search; ObjectType from @prisma/client
-}
-
-// response
-FAAObjectWithRelativeLocation[]
-```
 
 - `FAAObject`, `ObjectType` in `@prisma/client` (be sure to run `yarn prisma generate` to generate `client`)
 - `FAAObjectWithRelativeLocation` and ` in `./src/data.ts`
