@@ -6,6 +6,7 @@
   "license": "MIT",
   "scripts": {
     "dev": "ts-node ./src/index.ts",
+    "csv": "ts-node ./bin/csv.ts",
     "test": "jest",
     "db:reinitialize": "yarn db:reset && yarn db:seed",
     "db:reset": "prisma db push --force-reset; prisma generate",
@@ -24,6 +25,7 @@
   "dependencies": {
     "@prisma/client": "^4.2.1",
     "@types/express": "^4.17.13",
+    "csv-stringify": "^6.2.0",
     "dotenv": "^16.0.1",
     "express": "^4.18.1",
     "express-validator": "^6.14.2",

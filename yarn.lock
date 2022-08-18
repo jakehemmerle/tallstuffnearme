@@ -1607,6 +1607,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"csv-stringify@npm:^6.2.0":
+  version: 6.2.0
+  resolution: "csv-stringify@npm:6.2.0"
+  checksum: c2fa074fbf2bcb8cea966c1bdf89d377f1f79bbd33e13092131cac511363479a4e7a923f26fe741e2ef5bad479a400c72e18ceb4b7c33e1f0a60cf33f5c31f1c
+  languageName: node
+  linkType: hard
+
 "data-urls@npm:^2.0.0":
   version: 2.0.0
   resolution: "data-urls@npm:2.0.0"
@@ -4172,6 +4179,7 @@ __metadata:
     "@types/jest": ^27.0.3
     "@types/node": ^17.0.2
     "@types/yargs": ^17.0.8
+    csv-stringify: ^6.2.0
     dotenv: ^16.0.1
     express: ^4.18.1
     express-validator: ^6.14.2
