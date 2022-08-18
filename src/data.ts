@@ -29,7 +29,7 @@ const _milesToDegrees = (miles: number): number => {
 }
 
 // gets coordinate range for querying objects from a lat/long and radius
-export const _getQueryCoordinates = (location: Coordinates, radiusInMiles: number): _QueryLocationParameters => {
+export const _calculateQueryCorodinates = (location: Coordinates, radiusInMiles: number): _QueryLocationParameters => {
     const radiusAsDegrees = _milesToDegrees(radiusInMiles);
     return {
         location,

@@ -1,5 +1,6 @@
 import { FAAObject, ObjectType } from '@prisma/client';
 
+// TODO refactor/remove
 // HTTP response is usually is an array of these
 type FAAObjectWithRelativeLocation = {
     FAAObject: FAAObject,
@@ -15,6 +16,7 @@ type ObjectQueryRequest = {
     excludeObjectTypes?: ObjectType[],
 }
 
+// TODO refactor/remove
 /// digital degree; both are float, eg. -84.7328
 type Coordinates = {
     lattitude: number,

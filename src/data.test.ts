@@ -1,4 +1,4 @@
-import { _getQueryCoordinates, _QueryLocationParameters, _distanceBetweenPoints } from './data';
+import { _calculateQueryCorodinates, _QueryLocationParameters, _distanceBetweenPoints } from './data';
 import { Coordinates } from './types';
 
 test('compute distance between two decimal degree points', async () => {

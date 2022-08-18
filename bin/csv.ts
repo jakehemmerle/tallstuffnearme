@@ -3,7 +3,10 @@ import assert from 'assert';
 import { searchObjects, defaultQuery } from '../src/controller';
 
 const data = [];
-const inputData = searchObjects(defaultQuery);
+const inputData = searchObjects({
+  ...defaultQuery,
+  radius: 1000,
+});
 
 // Initialize the stringifier
 const stringifier = stringify({
