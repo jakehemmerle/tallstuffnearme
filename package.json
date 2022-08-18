@@ -7,6 +7,7 @@
   "scripts": {
     "dev": "ts-node ./src/index.ts",
     "csv": "ts-node ./bin/csv.ts",
+    "geojson": "ts-node ./bin/geojson.ts",
     "test": "jest",
     "db:reinitialize": "yarn db:reset && yarn db:seed",
     "db:reset": "prisma db push --force-reset; prisma generate",
