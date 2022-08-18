@@ -46,8 +46,6 @@ For parsing earth data down the road(?):
 
 Google Maps JS API: <https://developers.google.com/maps/documentation/javascript/tutorials>
 
-## Example API
-
 ## Legal
 
 From the DOF FAQ:
@@ -59,8 +57,3 @@ A: Yes, it is in the public domain. There are no restrictions on how you may use
 Seem the [FAQ here](https://www.faa.gov/air_traffic/flight_info/aeronav/obst_data/doffaqs/)].
 
 [dof]: https://www.faa.gov/air_traffic/flight_info/aeronav/digital_products/dof/
-
-----
-
-- `FAAObject`, `ObjectType` in `@prisma/client` (be sure to run `yarn prisma generate` to generate `client`)
-- `FAAObjectWithRelativeLocation` and ` in `./src/data.ts`
