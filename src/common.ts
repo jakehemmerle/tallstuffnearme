@@ -4,7 +4,7 @@ import { FeatureCollection, Point } from 'geojson';
 import { ObjectType } from './types';
 
 // GeoJson properties for Object
-export type ObjectGeoJsonProperties = {
+type ObjectGeoJsonProperties = {
     OASNumber: number
     Verified: string
     Country: string
@@ -23,5 +23,5 @@ export type ObjectGeoJsonProperties = {
     distanceFromLocation: number,
 }
 
-// Response format for objects domain logic
+// Response format for objects domain logic is a GeoJson feature collection
 export type ObjectResponder = FeatureCollection<Point, ObjectGeoJsonProperties>;
