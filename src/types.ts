@@ -19,7 +19,7 @@ type ObjectQueryRequest = {
 // TODO refactor/remove
 /// digital degree; both are float, eg. -84.7328
 type Coordinates = {
-    lattitude: number,
+    latitude: number,
     longitude: number,
 };
 

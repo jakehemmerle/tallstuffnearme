@@ -15,7 +15,7 @@ app.use(json());
 
 // PROD query function
 app.get('/objects',
-  body("lattitude").isNumeric(),
+  body("latitude").isNumeric(),
   body("longitude").isNumeric(),
   body("radius").isInt({ lt: 501, gt: 0 }),
   async (req: Request, res: Response) => {

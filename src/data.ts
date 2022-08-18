@@ -14,8 +14,8 @@ const prisma = new PrismaClient();
 export type _QueryLocationParameters = {
     location: Coordinates
     radiusInMiles: number,
-    lattitudeUpperBound: number,
-    lattitudeLowerBound: number,
+    latitudeUpperBound: number,
+    latitudeLowerBound: number,
     longitudeUpperBound: number,
     longitudeLowerBound: number,
 }
@@ -34,8 +34,8 @@ export const _calculateQueryCorodinates = (location: Coordinates, radiusInMiles:
     return {
         location,
         radiusInMiles,
-        lattitudeUpperBound: location.lattitude + radiusAsDegrees,
-        lattitudeLowerBound: location.lattitude - radiusAsDegrees,
+        latitudeUpperBound: location.latitude + radiusAsDegrees,
+        latitudeLowerBound: location.latitude - radiusAsDegrees,
         longitudeUpperBound: location.longitude + radiusAsDegrees,
         longitudeLowerBound: location.longitude - radiusAsDegrees
     }
@@ -99,7 +99,7 @@ const _rawStringToFAAObject = (line: string): Prisma.FAAObjectCreateInput => {
 
 // compute the distance between two decimal degree points
 export const _distanceBetweenPoints = (p1: Coordinates, p2: Coordinates): number => {
-    const latDelta = Math.abs(p1.lattitude - p2.lattitude);
+    const latDelta = Math.abs(p1.latitude - p2.latitude);
     const longDelta = Math.abs(p1.longitude - p2.longitude);
 
     const distanceInDD = Math.sqrt(latDelta ** 2 + longDelta ** 2); // pythagorean theorum

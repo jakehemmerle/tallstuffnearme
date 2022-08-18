@@ -6,11 +6,11 @@ import { ObjectResponder } from "./common";
 const prisma = new PrismaClient();
 
 export const parseRequestBody = (input): ObjectQueryRequest => {
-    const { lattitude, longitude, radius, minHeight, maxHeight, excludeObjectTypes } = input;
+    const { latitude, longitude, radius, minHeight, maxHeight, excludeObjectTypes } = input;
     return {
         location: {
             longitude,
-            lattitude
+            latitude
         },
         radius: radius | 10,
         minHeight: minHeight | 100,
@@ -30,8 +30,8 @@ export const searchObjects = async (query: ObjectQueryRequest): Promise<ObjectRe
     } = query;
 
     const {
-        lattitudeUpperBound,
-        lattitudeLowerBound,
+        latitudeUpperBound,
+        latitudeLowerBound,
         longitudeUpperBound,
         longitudeLowerBound,
     } = _calculateQueryCorodinates(location, radius);
@@ -44,8 +44,8 @@ export const searchObjects = async (query: ObjectQueryRequest): Promise<ObjectRe
                 lte: maxHeight
             },
             Latitude: {
-                lte: lattitudeUpperBound,
-                gte: lattitudeLowerBound
+                lte: latitudeUpperBound,
+                gte: latitudeLowerBound
             },
             Longitude: {
                 lte: longitudeUpperBound,
@@ -64,7 +64,7 @@ export const searchObjects = async (query: ObjectQueryRequest): Promise<ObjectRe
     const objectsWithDistance: FAAObjectWithRelativeLocation[] = objects.map(FAAObject => ({
         FAAObject,
         distanceFromLocation: _distanceBetweenPoints(location, {
-            lattitude: FAAObject.Latitude,
+            latitude: FAAObject.Latitude,
             longitude: FAAObject.Longitude,
         })
     }));
@@ -77,7 +77,7 @@ export const searchObjects = async (query: ObjectQueryRequest): Promise<ObjectRe
 export const defaultQuery = (): Promise<ObjectResponder> => (
     searchObjects({
         location: {
-            lattitude: 36.147769,
+            latitude: 36.147769,
             longitude: -115.157224
         },
         radius: 1,
