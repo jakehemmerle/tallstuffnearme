@@ -14,7 +14,8 @@ app.use(json());
 /// ROUTES ///
 
 // PROD query function
-app.get('/objects',
+app.post(
+  "/objects",
   body("latitude").isNumeric(),
   body("longitude").isNumeric(),
   body("radius").isInt({ lt: 501, gt: 0 }),
@@ -26,7 +27,6 @@ app.get('/objects',
     }
     // parse and query, return GeoJson
     const query: ObjectQueryRequest = parseRequestBody(req.body);
-    console.log(query);
     searchObjects(query)
       .then((result) => res.json(result)).catch(() => res.status(400).json({ error: "could not query" }));
   }
