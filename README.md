@@ -21,7 +21,7 @@ Set your search parameters and stuff in `src/geojson.ts` and then run `yarn geoj
 Run `yarn dev` to start the webserver. The `GET /object` endpoint will return a GeoJSON feature collection based on the query parameters you provide it. Example:
 
 ```ts
-// GET /object with following JSON payload in body
+// GET /objects with following JSON payload in body
 {
     latitude: number, // decimal degrees
     longitude: number, // decimal degrees
