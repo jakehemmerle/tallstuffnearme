@@ -18,7 +18,7 @@ Set your search parameters and stuff in `src/geojson.ts` and then run `yarn geoj
 
 ## Serve via webserver
 
-Run `yarn dev` to start the webserver. The `GET /object` endpoint will return a GeoJSON feature collection based on the query parameters you provide it. Example:
+Run `yarn dev` to start the webserver. The `GET /objects` endpoint will return a GeoJSON feature collection based on the query parameters you provide it. Example:
 
 ```ts
 // GET /objects with following JSON payload in body
