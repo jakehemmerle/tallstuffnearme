@@ -18,9 +18,6 @@ app.use(json());
 // PROD query function
 app.post(
   "/objects",
-  body("latitude").isNumeric(),
-  body("longitude").isNumeric(),
-  body("radius").isInt({ lt: 501, gt: 0 }),
   async (req: Request, res: Response) => {
     // validate input
     const errors = validationResult(req);

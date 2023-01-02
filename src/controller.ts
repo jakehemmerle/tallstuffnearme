@@ -14,7 +14,7 @@ export const parseRequestBody = (input): ObjectQueryRequest => {
         },
         radius: radius | 10,
         minHeight: minHeight | 100,
-        maxHeight,
+        maxHeight: maxHeight | 1000,
         excludeObjectTypes,
     }
 }
