@@ -6,15 +6,18 @@ import { ObjectResponder } from "./common";
 const prisma = new PrismaClient();
 
 export const parseRequestBody = (input): ObjectQueryRequest => {
-    const { latitude, longitude, radius, minHeight, maxHeight, excludeObjectTypes } = input;
+    var { latitude, longitude, radius, minHeight, maxHeight, excludeObjectTypes } = input;
+    // Force lat and long to be floats
+    latitude = parseFloat(latitude);
+    longitude = parseFloat(longitude);
     return {
         location: {
             longitude,
             latitude
         },
-        radius: radius | 10,
-        minHeight: minHeight | 100,
-        maxHeight: maxHeight | 1000,
+        radius: +radius | 10, // Force an int and set the default to 10 if not provided or an error
+        minHeight: +minHeight | 100, // Force an int and default to 100 if not provided or error
+        maxHeight: +maxHeight | 1000, // Force an int and default to 1000 if not provided or error
         excludeObjectTypes,
     }
 }

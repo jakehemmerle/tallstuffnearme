@@ -12,6 +12,7 @@ const app = express();
 app.use(cors()); // for now allow every domain in development
 app.use(json());
 
+app.use(express.static('static'));
 
 /// ROUTES ///
 

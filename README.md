@@ -35,6 +35,14 @@ Run `yarn dev` to start the webserver. The `GET /objects` endpoint will return a
 FeatureCollection<Point, ObjectGeoJsonProperties>
 ```
 
+## Google Maps
+
+The default endpoint uses Google Maps to allow searching the parsed database,
+and will draw each object on the map with relevant data as a tooltip.
+
+In order to use the Google Maps integration, you will need to edit
+static/index.html to include your GoogleMaps API key.
+
 ## Dev Resources
 
 [FAA Digital Obstacle File][dof]
