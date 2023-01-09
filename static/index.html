@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Tall Shit Near Me</title>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=default"></script>
+
+    <link rel="stylesheet" type="text/css" href="./style.css" />
+    <script src="./index.js"></script>
+  </head>
+  <body>
+	<div id="top_panel">
+		<div id="ts_params" class="search_params">
+			<form>
+				Latitude: <input type="text" name="lat" id="lat" value="36.147769">
+				Longitude: <input type="text" name="lon" id="lon" value="-115.157224">
+				Radius: <input type="text" name="radius" id="radius" value="10">
+				Min Height: <input type="text" name="minh" id="minh"value="100">
+				Max Height: <input type="text" name="maxh" id="maxh" value="1000">
+			</form>
+			<br />
+			<button onclick="GMGeoLocate()">Get Current Location</button>
+			<button onclick="FindObjects()">Find Objects</button>
+		</div>
+	</div>
+    <div id="map" class="obj_map">
+
+    <!-- 
+     The `defer` attribute causes the callback to execute after the full HTML
+     document has been parsed. For non-blocking uses, avoiding race conditions,
+     and consistent behavior across browsers, consider loading using Promises
+     with https://www.npmjs.com/package/@googlemaps/js-api-loader.
+    -->
+    <script
+	    src="https://maps.googleapis.com/maps/api/js?key=&callback=initMap&v=weekly"
+		    defer></script>
+    </div>
+
+    <div id="local_objects" class="obj_list"></div>
+  </body>
+</html>

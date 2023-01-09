@@ -1,0 +1,24 @@
+/* 
+ * Always set the map height explicitly to define the size of the div element
+ * that contains the map. 
+ */
+#map {
+  height: 90%;
+}
+#ts_params {
+height: 5%;
+}
+#local_objects{
+height: 5%;
+overflow-y: auto;
+}
+
+/* 
+ * Optional: Makes the sample page fill the window. 
+ */
+html,
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}

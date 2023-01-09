@@ -12,15 +12,13 @@ const app = express();
 app.use(cors()); // for now allow every domain in development
 app.use(json());
 
+app.use(express.static('static'));
 
 /// ROUTES ///
 
 // PROD query function
 app.post(
   "/objects",
-  body("latitude").isNumeric(),
-  body("longitude").isNumeric(),
-  body("radius").isInt({ lt: 501, gt: 0 }),
   async (req: Request, res: Response) => {
     // validate input
     const errors = validationResult(req);

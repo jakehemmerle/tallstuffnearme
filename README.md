@@ -18,10 +18,10 @@ Set your search parameters and stuff in `src/geojson.ts` and then run `yarn geoj
 
 ## Serve via webserver
 
-Run `yarn dev` to start the webserver. The `GET /object` endpoint will return a GeoJSON feature collection based on the query parameters you provide it. Example:
+Run `yarn dev` to start the webserver. The `GET /objects` endpoint will return a GeoJSON feature collection based on the query parameters you provide it. Example:
 
 ```ts
-// GET /object with following JSON payload in body
+// GET /objects with following JSON payload in body
 {
     latitude: number, // decimal degrees
     longitude: number, // decimal degrees
@@ -34,6 +34,14 @@ Run `yarn dev` to start the webserver. The `GET /object` endpoint will return a 
 // response is a geojson feature collection
 FeatureCollection<Point, ObjectGeoJsonProperties>
 ```
+
+## Google Maps
+
+The default endpoint uses Google Maps to allow searching the parsed database,
+and will draw each object on the map with relevant data as a tooltip.
+
+In order to use the Google Maps integration, you will need to edit
+static/index.html to include your GoogleMaps API key.
 
 ## Dev Resources
 
