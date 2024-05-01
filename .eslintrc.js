@@ -2,6 +2,8 @@ module.exports = {
   env: {
     node: true,
     es2021: true,
+    // Define 'module' as a global variable for Node.js environment
+    'shared-node-browser': true,
   },
   extends: [
     'eslint:recommended',
@@ -21,7 +23,12 @@ module.exports = {
   },
   settings: {
     react: {
-      version: 'detect', // Tells eslint-plugin-react to automatically detect the version of React to use
+      // Explicitly set the React version to the latest stable release
+      version: '17.0',
     },
+  },
+  // Define 'module' as a global variable to avoid 'module is not defined' error
+  globals: {
+    module: 'readonly',
   },
 };
