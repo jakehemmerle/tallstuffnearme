@@ -1,17 +1,15 @@
-// starts the webserver, routes etc.
-
 import cors from 'cors';
 import express, { json, Request, Response } from 'express';
 import { body, validationResult } from 'express-validator';
 import { defaultQuery, parseRequestBody, searchObjects } from './controller';
 import { ObjectQueryRequest } from './types';
 
-const port = 3001;
+// Use environment variable for port or default to 3001
+const port = process.env.PORT || 3001;
 
 const app = express();
 app.use(cors()); // for now allow every domain in development
 app.use(json());
-
 
 /// ROUTES ///
 
@@ -43,5 +41,5 @@ app.get('/example', async (_, res: Response) => defaultQuery().then(result => re
 
 /// SERVER LAUNCH ///
 app.listen(port, () => {
-  console.log(`Tall shit near you can be found on port ${port}...`);
+  console.log(`Server running on port ${port}`);
 });
