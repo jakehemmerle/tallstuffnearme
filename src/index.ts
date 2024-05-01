@@ -4,6 +4,10 @@ import { body, validationResult } from 'express-validator';
 import { defaultQuery, parseRequestBody, searchObjects } from './controller';
 import { ObjectQueryRequest } from './types';
 
+// Constants for validation
+const MAX_RADIUS = 500;
+const MIN_RADIUS = 1;
+
 // Use environment variable for port or default to 3001
 const port = process.env.PORT || 3001;
 
@@ -18,7 +22,7 @@ app.post(
   "/objects",
   body("latitude").isNumeric(),
   body("longitude").isNumeric(),
-  body("radius").isInt({ lt: 501, gt: 0 }),
+  body("radius").isInt({ lt: MAX_RADIUS + 1, gt: MIN_RADIUS - 1 }),
   async (req: Request, res: Response) => {
     // validate input
     const errors = validationResult(req);
@@ -28,16 +32,22 @@ app.post(
     // parse and query, return GeoJson
     const query: ObjectQueryRequest = parseRequestBody(req.body);
     searchObjects(query)
-      .then((result) => res.json(result)).catch(() => res.status(400).json({ error: "could not query" }));
+      .then((result) => res.json(result))
+      .catch((error) => {
+        console.error('Failed to search objects:', error);
+        res.status(500).json({ error: "Internal server error" });
+      });
   }
 )
 
-// DEV ping
-app.get('/ping', (_, res: Response) => res.send('pong'));
+// DEV routes only included in development environment
+if (process.env.NODE_ENV === 'development') {
+  // DEV ping
+  app.get('/ping', (_, res: Response) => res.send('pong'));
 
-// DEV example query for developers to see data format
-app.get('/example', async (_, res: Response) => defaultQuery().then(result => res.json(result)));
-
+  // DEV example query for developers to see data format
+  app.get('/example', async (_, res: Response) => defaultQuery().then(result => res.json(result)));
+}
 
 /// SERVER LAUNCH ///
 app.listen(port, () => {
