@@ -51,5 +51,5 @@ if (process.env.NODE_ENV === 'development') {
 
 /// SERVER LAUNCH ///
 app.listen(port, () => {
-  console.log(`Server running on port ${port}`);
+  console.log(`Tall stuff near you can be found on port ${port}...`);
 });
