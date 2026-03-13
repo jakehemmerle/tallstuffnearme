@@ -1,44 +1,27 @@
 // This file includes types, functions, and helpers for querying FAA data with prisma
 
 import { readFileSync } from 'fs';
-import { PrismaClient, Prisma, ObjectType } from '@prisma/client';
+import { Prisma, ObjectType } from '@prisma/client';
 import { Coordinates } from './types'
+import prisma from './prisma';
 
+const EARTH_RADIUS_MILES = 3958.8;
 
-// conversion parameters from: http://wiki.gis.com/wiki/index.php/Decimal_degrees
-const KM_PER_DEGREE = 111.320; // surface distance in km per degree
-const MILES_TO_KM = 1.609344;
+// Haversine formula for distance between two lat/lng points in miles
+export const _distanceBetweenPoints = (p1: Coordinates, p2: Coordinates): number => {
+    const toRad = (deg: number) => deg * Math.PI / 180;
 
-const prisma = new PrismaClient();
+    const dLat = toRad(p2.latitude - p1.latitude);
+    const dLon = toRad(p2.longitude - p1.longitude);
 
-export type _QueryLocationParameters = {
-    location: Coordinates
-    radiusInMiles: number,
-    latitudeUpperBound: number,
-    latitudeLowerBound: number,
-    longitudeUpperBound: number,
-    longitudeLowerBound: number,
-}
+    const a =
+        Math.sin(dLat / 2) ** 2 +
+        Math.cos(toRad(p1.latitude)) * Math.cos(toRad(p2.latitude)) *
+        Math.sin(dLon / 2) ** 2;
 
-const _degreesToMiles = (degrees: number): number => {
-    return degrees * KM_PER_DEGREE / MILES_TO_KM;
-}
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
-const _milesToDegrees = (miles: number): number => {
-    return miles * MILES_TO_KM / KM_PER_DEGREE;
-}
-
-// gets coordinate range for querying objects from a lat/long and radius
-export const _calculateQueryCorodinates = (location: Coordinates, radiusInMiles: number): _QueryLocationParameters => {
-    const radiusAsDegrees = _milesToDegrees(radiusInMiles);
-    return {
-        location,
-        radiusInMiles,
-        latitudeUpperBound: location.latitude + radiusAsDegrees,
-        latitudeLowerBound: location.latitude - radiusAsDegrees,
-        longitudeUpperBound: location.longitude + radiusAsDegrees,
-        longitudeLowerBound: location.longitude - radiusAsDegrees
-    }
+    return EARTH_RADIUS_MILES * c;
 }
 
 // input format eg. ' 40 06 17.00N', takes lat or long as input
@@ -95,17 +78,6 @@ const _rawStringToFAAObject = (line: string): Prisma.FAAObjectCreateInput => {
     };
 
     return currentObject;
-}
-
-// compute the distance between two decimal degree points
-export const _distanceBetweenPoints = (p1: Coordinates, p2: Coordinates): number => {
-    const latDelta = Math.abs(p1.latitude - p2.latitude);
-    const longDelta = Math.abs(p1.longitude - p2.longitude);
-
-    const distanceInDD = Math.sqrt(latDelta ** 2 + longDelta ** 2); // pythagorean theorum
-
-    return _degreesToMiles(distanceInDD);
-
 }
 
 // parse and insert .Dat file to a Postgres DB

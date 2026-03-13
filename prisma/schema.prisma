@@ -28,6 +28,9 @@ model FAAObject {
   FAAStudyNumber String
   Action         String
   JDate          String
+
+  @@index([Latitude, Longitude])
+  @@index([AGL])
 }
 
 enum ObjectType {

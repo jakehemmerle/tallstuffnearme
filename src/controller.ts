@@ -1,72 +1,66 @@
-import { FAAObject, PrismaClient } from "@prisma/client";
-import { _distanceBetweenPoints, _calculateQueryCorodinates } from "./data";
+import { FAAObject } from "@prisma/client";
+import { _distanceBetweenPoints } from "./data";
 import { FAAObjectWithRelativeLocation, ObjectQueryRequest } from "./types";
 import { ObjectResponder } from "./common";
+import prisma from "./prisma";
 
-const prisma = new PrismaClient();
-
-export const parseRequestBody = (input): ObjectQueryRequest => {
-    const { latitude, longitude, radius, minHeight, maxHeight, excludeObjectTypes } = input;
+export const parseRequestBody = (input: any): ObjectQueryRequest => {
+    const { bounds, center, minHeight, maxHeight, excludeObjectTypes, limit } = input;
     return {
-        location: {
-            longitude,
-            latitude
-        },
-        radius: radius | 10,
-        minHeight: minHeight | 100,
+        bounds,
+        center,
+        minHeight: minHeight ?? 100,
         maxHeight,
         excludeObjectTypes,
+        limit: limit ?? 500,
     }
 }
 
 // domain logic for /objects
 export const searchObjects = async (query: ObjectQueryRequest): Promise<ObjectResponder> => {
     const {
-        location,
-        radius,
+        bounds,
+        center,
         minHeight,
         maxHeight,
         excludeObjectTypes,
+        limit,
     } = query;
-
-    const {
-        latitudeUpperBound,
-        latitudeLowerBound,
-        longitudeUpperBound,
-        longitudeLowerBound,
-    } = _calculateQueryCorodinates(location, radius);
 
     // get objects in query area
     const objects: FAAObject[] = await prisma.fAAObject.findMany({
         where: {
             AGL: {
                 gte: minHeight,
-                lte: maxHeight
+                ...(maxHeight != null ? { lte: maxHeight } : {}),
             },
             Latitude: {
-                lte: latitudeUpperBound,
-                gte: latitudeLowerBound
+                gte: bounds.sw.latitude,
+                lte: bounds.ne.latitude,
             },
             Longitude: {
-                lte: longitudeUpperBound,
-                gte: longitudeLowerBound
+                gte: bounds.sw.longitude,
+                lte: bounds.ne.longitude,
             },
-            ObjectType: {
-                notIn: excludeObjectTypes
-            }
+            ...(excludeObjectTypes?.length ? {
+                ObjectType: { notIn: excludeObjectTypes }
+            } : {}),
         },
         orderBy: {
             AGL: 'desc'
-        }
+        },
+        take: limit,
     });
 
-    // add relative distance to each object from query location
+    // add relative distance to each object from center (if provided)
     const objectsWithDistance: FAAObjectWithRelativeLocation[] = objects.map(FAAObject => ({
         FAAObject,
-        distanceFromLocation: _distanceBetweenPoints(location, {
-            latitude: FAAObject.Latitude,
-            longitude: FAAObject.Longitude,
-        })
+        ...(center ? {
+            distanceFromLocation: _distanceBetweenPoints(center, {
+                latitude: FAAObject.Latitude,
+                longitude: FAAObject.Longitude,
+            })
+        } : {}),
     }));
 
     // return GeoJSON feature collection
@@ -76,15 +70,14 @@ export const searchObjects = async (query: ObjectQueryRequest): Promise<ObjectRe
 // default query for testing
 export const defaultQuery = (): Promise<ObjectResponder> => (
     searchObjects({
-        location: {
-            latitude: 36.147769,
-            longitude: -115.157224
+        bounds: {
+            sw: { latitude: 36.137, longitude: -115.167 },
+            ne: { latitude: 36.157, longitude: -115.147 },
         },
-        radius: 1,
+        center: { latitude: 36.147769, longitude: -115.157224 },
         minHeight: 100,
     })
 )
-
 
 // converts DB query with location to GeoJSON feature collection
 const fAAObjectsToGeoJSON = (objects: FAAObjectWithRelativeLocation[]): ObjectResponder => {
@@ -98,7 +91,9 @@ const fAAObjectsToGeoJSON = (objects: FAAObjectWithRelativeLocation[]): ObjectRe
             },
             properties: {
                 ...object.FAAObject,
-                distanceFromLocation: object.distanceFromLocation,
+                ...(object.distanceFromLocation != null
+                    ? { distanceFromLocation: object.distanceFromLocation }
+                    : {}),
             }
         }))
     }

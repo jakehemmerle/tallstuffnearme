@@ -3,11 +3,26 @@ import app from './app';
 
 jest.setTimeout(30000);
 
+// Helper: compute SW/NE bounds from a center point and radius in miles
+const MILES_PER_DEGREE_LAT = 69.0;
+const boundsFromCenter = (lat: number, lng: number, radiusMiles: number) => {
+  const dLat = radiusMiles / MILES_PER_DEGREE_LAT;
+  const dLng = radiusMiles / (MILES_PER_DEGREE_LAT * Math.cos(lat * Math.PI / 180));
+  return {
+    sw: { latitude: lat - dLat, longitude: lng - dLng },
+    ne: { latitude: lat + dLat, longitude: lng + dLng },
+  };
+};
+
 describe('API E2E Tests', () => {
   test('POST /objects returns valid GeoJSON', async () => {
+    const center = { latitude: 39.14, longitude: -84.51 };
     const res = await request(app)
       .post('/objects')
-      .send({ latitude: 39.14, longitude: -84.51, radius: 10 });
+      .send({
+        bounds: boundsFromCenter(center.latitude, center.longitude, 10),
+        center,
+      });
 
     console.log('Status:', res.status);
     console.log('Feature count:', res.body.features?.length);
@@ -32,18 +47,30 @@ describe('API E2E Tests', () => {
     }
   });
 
-  test('Radius and height filters constrain results', async () => {
-    const location = { latitude: 39.14, longitude: -84.51 };
+  test('Bounds size and height filters constrain results', async () => {
+    const center = { latitude: 39.14, longitude: -84.51 };
 
     const [small, large, tall] = await Promise.all([
-      request(app).post('/objects').send({ ...location, radius: 1, minHeight: 100 }),
-      request(app).post('/objects').send({ ...location, radius: 10, minHeight: 100 }),
-      request(app).post('/objects').send({ ...location, radius: 10, minHeight: 500 }),
+      request(app).post('/objects').send({
+        bounds: boundsFromCenter(center.latitude, center.longitude, 1),
+        center,
+        minHeight: 100,
+      }),
+      request(app).post('/objects').send({
+        bounds: boundsFromCenter(center.latitude, center.longitude, 10),
+        center,
+        minHeight: 100,
+      }),
+      request(app).post('/objects').send({
+        bounds: boundsFromCenter(center.latitude, center.longitude, 10),
+        center,
+        minHeight: 500,
+      }),
     ]);
 
-    console.log('r=1, minH=100 count:', small.body.features.length);
-    console.log('r=10, minH=100 count:', large.body.features.length);
-    console.log('r=10, minH=500 count:', tall.body.features.length);
+    console.log('tight bounds, minH=100 count:', small.body.features.length);
+    console.log('wide bounds, minH=100 count:', large.body.features.length);
+    console.log('wide bounds, minH=500 count:', tall.body.features.length);
 
     expect(small.body.features.length).toBeGreaterThan(0);
     expect(large.body.features.length).toBeGreaterThan(0);
@@ -56,10 +83,10 @@ describe('API E2E Tests', () => {
 
   test('Input validation rejects bad requests', async () => {
     const cases = [
-      { body: {}, label: 'missing fields' },
-      { body: { latitude: 'abc', longitude: -84.51, radius: 10 }, label: 'non-numeric lat' },
-      { body: { latitude: 39.14, longitude: -84.51, radius: 0 }, label: 'radius=0' },
-      { body: { latitude: 39.14, longitude: -84.51, radius: 600 }, label: 'radius=600' },
+      { body: {}, label: 'missing bounds' },
+      { body: { bounds: { sw: { latitude: 'abc', longitude: -84.51 }, ne: { latitude: 39.3, longitude: -84.4 } } }, label: 'non-numeric lat' },
+      { body: { bounds: { sw: { latitude: 39.0, longitude: -84.6 }, ne: { latitude: 39.3, longitude: -84.4 } }, limit: 0 }, label: 'limit=0' },
+      { body: { bounds: { sw: { latitude: 39.0, longitude: -84.6 }, ne: { latitude: 39.3, longitude: -84.4 } }, limit: 3000 }, label: 'limit=3000' },
     ];
 
     const results = await Promise.all(
@@ -77,9 +104,13 @@ describe('API E2E Tests', () => {
   });
 
   test('DAT file parse round-trip: known HUNTINGTON OH record', async () => {
+    const center = { latitude: 38.408, longitude: -82.561 };
     const res = await request(app)
       .post('/objects')
-      .send({ latitude: 38.408, longitude: -82.561, radius: 2 });
+      .send({
+        bounds: boundsFromCenter(center.latitude, center.longitude, 2),
+        center,
+      });
 
     console.log('All OASNumbers:', res.body.features.map((f: any) => f.properties.OASNumber));
 

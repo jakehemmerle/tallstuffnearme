@@ -20,7 +20,7 @@ type ObjectGeoJsonProperties = {
     FAAStudyNumber: string
     Action: string
     JDate: string
-    distanceFromLocation: number,
+    distanceFromLocation?: number,
 }
 
 // Response format for objects domain logic is a GeoJson feature collection

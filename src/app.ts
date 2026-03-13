@@ -11,9 +11,15 @@ app.use(json());
 // PROD query function
 app.post(
   "/objects",
-  body("latitude").isNumeric(),
-  body("longitude").isNumeric(),
-  body("radius").isInt({ lt: 501, gt: 0 }),
+  body("bounds.sw.latitude").isNumeric(),
+  body("bounds.sw.longitude").isNumeric(),
+  body("bounds.ne.latitude").isNumeric(),
+  body("bounds.ne.longitude").isNumeric(),
+  body("center.latitude").optional().isNumeric(),
+  body("center.longitude").optional().isNumeric(),
+  body("minHeight").optional().isInt(),
+  body("maxHeight").optional().isInt(),
+  body("limit").optional().isInt({ min: 1, max: 2000 }),
   async (req: Request, res: Response) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
