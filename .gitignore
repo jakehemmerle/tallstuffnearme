@@ -32,6 +32,7 @@ prisma/dev.db
 !**/package.json
 !**/tsconfig.json
 !**/components.json
+!**/package-lock.json
 
 # Next.js static export
 web/out
