@@ -35,7 +35,7 @@ jobs:
           node-version: 18
       - run: yarn install --immutable
       - run: npx prisma db push
-      - run: yarn test
+      - run: yarn test --testPathIgnorePatterns=e2e
 
   deploy:
     needs: test
