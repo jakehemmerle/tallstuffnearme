@@ -1,0 +1,6 @@
+config:
+  gcp:project: tallshitnearme-app
+  gcp:region: us-central1
+  tallshitnearme:environment: staging
+  tallshitnearme:domain: staging.tallshitnearme.com
+encryptionsalt: v1:mM4EUc3AUGM=:v1:mHFDx0JKJHCJEPPi:wxp6RjXq6BWdvvaqDeu7/tgV9+1BHQ==

@@ -1,0 +1,61 @@
+name: Deploy Production
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: "Type 'deploy' to confirm production deployment"
+        required: true
+
+env:
+  GCP_PROJECT: tallshitnearme-app
+  GCP_REGION: us-central1
+  REGISTRY: us-central1-docker.pkg.dev/tallshitnearme-app/tallshitnearme
+
+jobs:
+  deploy:
+    if: github.event.inputs.confirm == 'deploy'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - uses: google-github-actions/setup-gcloud@v2
+
+      # Promote staging image to prod (deploy the exact same artifact)
+      - run: gcloud auth configure-docker ${GCP_REGION}-docker.pkg.dev --quiet
+      - run: |
+          docker pull ${REGISTRY}/app:staging
+          docker tag ${REGISTRY}/app:staging ${REGISTRY}/app:prod
+          docker push ${REGISTRY}/app:prod
+
+      # Run prisma migration against prod
+      - run: yarn install --immutable
+      - name: Run prisma db push
+        run: |
+          cd infra && npm ci && cd ..
+          DB_URL=$(pulumi -C infra stack output prodDbUrl -s shared --show-secrets)
+          DATABASE_URL="$DB_URL" npx prisma db push
+        env:
+          PULUMI_BACKEND_URL: gs://tallshitnearme-pulumi-state
+          PULUMI_CONFIG_PASSPHRASE: ${{ secrets.PULUMI_CONFIG_PASSPHRASE }}
+
+      # Deploy with Pulumi
+      - uses: pulumi/actions@v5
+        with:
+          command: up
+          stack-name: prod
+          work-dir: infra
+        env:
+          PULUMI_BACKEND_URL: gs://tallshitnearme-pulumi-state
+          PULUMI_CONFIG_PASSPHRASE: ${{ secrets.PULUMI_CONFIG_PASSPHRASE }}

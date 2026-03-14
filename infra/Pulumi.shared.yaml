@@ -1,0 +1,4 @@
+config:
+  gcp:project: tallshitnearme-app
+  gcp:region: us-central1
+encryptionsalt: v1:lSz7hBdaGC4=:v1:c3wqPPcf4FWOigcf:5GK9mrPcIit5Hk5gDhf7J2i3HlyTBQ==

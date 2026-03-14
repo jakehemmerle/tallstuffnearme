@@ -5,7 +5,7 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Tall Stuff Near Me",
+  title: "Tall Shit Near Me",
   description: "Explore FAA-registered tall obstacles on an interactive map",
 };
 

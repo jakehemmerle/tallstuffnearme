@@ -4592,9 +4592,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tallstuffnearme@workspace:.":
+"tallshitnearme@workspace:.":
   version: 0.0.0-use.local
-  resolution: "tallstuffnearme@workspace:."
+  resolution: "tallshitnearme@workspace:."
   dependencies:
     "@prisma/client": ^4.2.1
     "@types/express": ^4.17.13

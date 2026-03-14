@@ -1,0 +1,84 @@
+name: Deploy Staging
+
+on:
+  push:
+    branches: [master]
+
+env:
+  GCP_PROJECT: tallshitnearme-app
+  GCP_REGION: us-central1
+  REGISTRY: us-central1-docker.pkg.dev/tallshitnearme-app/tallshitnearme
+  ENVIRONMENT: staging
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:14
+        env:
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: tallshit_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgres"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+    env:
+      DATABASE_URL: postgresql://postgres:test@localhost:5432/tallshit_test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+      - run: yarn install --immutable
+      - run: npx prisma db push
+      - run: yarn test
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - uses: google-github-actions/setup-gcloud@v2
+
+      # Run prisma migration
+      - run: yarn install --immutable
+      - name: Run prisma db push
+        run: |
+          cd infra && npm ci && cd ..
+          DB_URL=$(pulumi -C infra stack output stagingDbUrl -s shared --show-secrets)
+          DATABASE_URL="$DB_URL" npx prisma db push
+        env:
+          PULUMI_BACKEND_URL: gs://tallshitnearme-pulumi-state
+          PULUMI_CONFIG_PASSPHRASE: ${{ secrets.PULUMI_CONFIG_PASSPHRASE }}
+
+      # Build and push Docker image
+      - run: gcloud auth configure-docker ${GCP_REGION}-docker.pkg.dev --quiet
+      - run: |
+          docker build -t ${REGISTRY}/app:${ENVIRONMENT} -t ${REGISTRY}/app:${GITHUB_SHA} .
+          docker push ${REGISTRY}/app --all-tags
+
+      # Deploy with Pulumi
+      - uses: pulumi/actions@v5
+        with:
+          command: up
+          stack-name: staging
+          work-dir: infra
+        env:
+          PULUMI_BACKEND_URL: gs://tallshitnearme-pulumi-state
+          PULUMI_CONFIG_PASSPHRASE: ${{ secrets.PULUMI_CONFIG_PASSPHRASE }}

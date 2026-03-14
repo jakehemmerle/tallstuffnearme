@@ -1,10 +1,10 @@
-# tallstuffnearme
+# tallshitnearme
 
-This shows you tall stuff around you from the best possible resource available: the [FAA Digital Obstacle File][dof];
+This shows you tall shit around you from the best possible resource available: the [FAA Digital Obstacle File][dof];
 
 ## Setup
 
-1. Clone repo with `git clone --depth 1 https://github.com/jakehemmerle/tallstuffnearme`
+1. Clone repo with `git clone --depth 1 https://github.com/jakehemmerle/tallshitnearme`
 2. Start a new Postgres instance and set URL in `.env`, or use the provided `docker-compose.yaml`.
 3. Decompress the (or [download the latest][dof] DOF zip file into `faa-data`.
 4. `yarn` (to install deps)

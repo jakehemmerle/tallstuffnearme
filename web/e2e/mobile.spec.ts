@@ -27,7 +27,7 @@ test.describe("Mobile", () => {
     );
     expect(scrollWidth).toBeLessThanOrEqual(clientWidth);
 
-    await expect(page.locator("h1")).toHaveText("Tall Stuff Near Me");
+    await expect(page.locator("h1")).toHaveText("Tall Shit Near Me");
   });
 
   test("detail sheet opens from bottom on mobile", async ({ page }) => {

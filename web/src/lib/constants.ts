@@ -1,5 +1,5 @@
 export const BACKEND_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+  process.env.NEXT_PUBLIC_API_URL || "";
 
 export const DEFAULT_CENTER = {
   latitude: 39.8,

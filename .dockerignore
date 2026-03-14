@@ -1,0 +1,7 @@
+node_modules
+web/node_modules
+faa-data
+client-react
+.git
+*.md
+infra

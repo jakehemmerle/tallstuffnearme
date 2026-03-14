@@ -1,0 +1,6 @@
+config:
+  gcp:project: tallshitnearme-app
+  gcp:region: us-central1
+  tallshitnearme:environment: prod
+  tallshitnearme:domain: tallshitnearme.com
+encryptionsalt: v1:+0XjLx+Hk+c=:v1:jOtp0H/YrReVeWq9:laWMUH/BZONV2ZXTsJelpk7bilxPsA==

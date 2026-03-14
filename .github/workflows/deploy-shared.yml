@@ -1,0 +1,40 @@
+name: Deploy Shared Infrastructure
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: "Type 'deploy' to confirm shared infra deployment"
+        required: true
+
+jobs:
+  deploy:
+    if: github.event.inputs.confirm == 'deploy'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      # Authenticate to GCP
+      - uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - uses: google-github-actions/setup-gcloud@v2
+
+      # Deploy shared infra with Pulumi
+      - uses: pulumi/actions@v5
+        with:
+          command: up
+          stack-name: shared
+          work-dir: infra
+        env:
+          PULUMI_BACKEND_URL: gs://tallshitnearme-pulumi-state
+          PULUMI_CONFIG_PASSPHRASE: ${{ secrets.PULUMI_CONFIG_PASSPHRASE }}
+          NEON_TOKEN: ${{ secrets.NEON_TOKEN }}

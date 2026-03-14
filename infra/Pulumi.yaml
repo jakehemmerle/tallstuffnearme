@@ -1,0 +1,3 @@
+name: tallshitnearme
+runtime: nodejs
+description: Infrastructure for tallshitnearme - serverless GCP deployment
