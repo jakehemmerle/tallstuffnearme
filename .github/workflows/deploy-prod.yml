@@ -25,6 +25,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 18
+          cache: yarn
 
       - uses: google-github-actions/auth@v2
         with:
@@ -33,14 +34,17 @@ jobs:
       - uses: google-github-actions/setup-gcloud@v2
 
       # Promote staging image to prod (deploy the exact same artifact)
-      - run: gcloud auth configure-docker ${GCP_REGION}-docker.pkg.dev --quiet
-      - run: |
+      - name: Authenticate Docker to GCP
+        run: gcloud auth configure-docker ${GCP_REGION}-docker.pkg.dev --quiet
+      - name: Promote staging image to prod
+        run: |
           docker pull ${REGISTRY}/app:staging
           docker tag ${REGISTRY}/app:staging ${REGISTRY}/app:prod
           docker push ${REGISTRY}/app:prod
 
       # Run prisma migration against prod
-      - run: yarn install --immutable
+      - name: Install backend dependencies
+        run: yarn install --immutable
       - name: Run prisma db push
         run: |
           cd infra && npm ci && cd ..
@@ -59,3 +63,11 @@ jobs:
         env:
           PULUMI_BACKEND_URL: gs://tallshitnearme-pulumi-state
           PULUMI_CONFIG_PASSPHRASE: ${{ secrets.PULUMI_CONFIG_PASSPHRASE }}
+
+      # Force new revision with the promoted image
+      - name: Deploy new revision
+        run: |
+          gcloud run services update tallshit-prod-app \
+            --image=${REGISTRY}/app:prod \
+            --region=${GCP_REGION} \
+            --project=${GCP_PROJECT}

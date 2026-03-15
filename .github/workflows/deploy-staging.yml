@@ -33,9 +33,13 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 18
-      - run: yarn install --immutable
-      - run: npx prisma db push
-      - run: yarn test --testPathIgnorePatterns=e2e --passWithNoTests
+          cache: yarn
+      - name: Install backend dependencies
+        run: yarn install --immutable
+      - name: Push prisma schema
+        run: npx prisma db push
+      - name: Run backend tests
+        run: yarn test --testPathIgnorePatterns=e2e --passWithNoTests
 
   deploy:
     needs: test
@@ -49,6 +53,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 18
+          cache: yarn
 
       - uses: google-github-actions/auth@v2
         with:
@@ -57,7 +62,8 @@ jobs:
       - uses: google-github-actions/setup-gcloud@v2
 
       # Run prisma migration
-      - run: yarn install --immutable
+      - name: Install backend dependencies
+        run: yarn install --immutable
       - name: Run prisma db push
         run: |
           cd infra && npm ci && cd ..
@@ -67,11 +73,23 @@ jobs:
           PULUMI_BACKEND_URL: gs://tallshitnearme-pulumi-state
           PULUMI_CONFIG_PASSPHRASE: ${{ secrets.PULUMI_CONFIG_PASSPHRASE }}
 
-      # Build and push Docker image
-      - run: gcloud auth configure-docker ${GCP_REGION}-docker.pkg.dev --quiet
-      - run: |
-          docker build -t ${REGISTRY}/app:${ENVIRONMENT} -t ${REGISTRY}/app:${GITHUB_SHA} .
-          docker push ${REGISTRY}/app --all-tags
+      # Build and push Docker image with layer caching
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Authenticate Docker to GCP
+        run: gcloud auth configure-docker ${GCP_REGION}-docker.pkg.dev --quiet
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/app:${{ env.ENVIRONMENT }}
+            ${{ env.REGISTRY }}/app:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
       # Deploy with Pulumi
       - uses: pulumi/actions@v5
@@ -82,3 +100,11 @@ jobs:
         env:
           PULUMI_BACKEND_URL: gs://tallshitnearme-pulumi-state
           PULUMI_CONFIG_PASSPHRASE: ${{ secrets.PULUMI_CONFIG_PASSPHRASE }}
+
+      # Force new revision with the latest image
+      - name: Deploy new revision
+        run: |
+          gcloud run services update tallshit-staging-app \
+            --image=${REGISTRY}/app:${GITHUB_SHA} \
+            --region=${GCP_REGION} \
+            --project=${GCP_PROJECT}
