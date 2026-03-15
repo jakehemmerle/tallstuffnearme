@@ -6,7 +6,7 @@ This shows you tall shit around you from the best possible resource available: t
 
 1. Clone repo with `git clone --depth 1 https://github.com/jakehemmerle/tallshitnearme`
 2. Start a new Postgres instance and set URL in `.env`, or use the provided `docker-compose.yaml`.
-3. Decompress the (or [download the latest][dof] DOF zip file into `faa-data`.
+3. [Download the latest DOF zip][dof-download] and extract into `faa-data/`.
 4. `yarn` (to install deps)
 5. `yarn db:reinitialize` - configure DB, parse DAT files, and seed the DB.
 
@@ -57,3 +57,4 @@ A: Yes, it is in the public domain. There are no restrictions on how you may use
 Seem the [FAQ here](https://www.faa.gov/air_traffic/flight_info/aeronav/obst_data/doffaqs/)].
 
 [dof]: https://www.faa.gov/air_traffic/flight_info/aeronav/digital_products/dof/
+[dof-download]: https://aeronav.faa.gov/Obst_Data/DOF_260215.zip

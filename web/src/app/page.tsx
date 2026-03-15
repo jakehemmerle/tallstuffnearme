@@ -62,8 +62,6 @@ export default function Home() {
         onFeatureClick={handleFeatureClick}
       />
       <FilterBar
-        minHeight={minHeight}
-        onMinHeightChange={setMinHeight}
         excludeObjectTypes={excludeObjectTypes}
         onToggleObjectType={toggleObjectType}
       />

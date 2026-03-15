@@ -1,44 +1,23 @@
 "use client";
 
 import { useMemo } from "react";
-import { Slider } from "@/components/ui/slider";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Checkbox } from "@/components/ui/checkbox";
 import { formatObjectType } from "@/lib/constants";
 import { ALL_OBJECT_TYPES, type ObjectType } from "@/lib/types";
 
 interface FilterBarProps {
-  minHeight: number;
-  onMinHeightChange: (value: number) => void;
   excludeObjectTypes: ObjectType[];
   onToggleObjectType: (type: ObjectType) => void;
 }
 
 export function FilterBar({
-  minHeight,
-  onMinHeightChange,
   excludeObjectTypes,
   onToggleObjectType,
 }: FilterBarProps) {
   const excludedSet = useMemo(() => new Set(excludeObjectTypes), [excludeObjectTypes]);
   return (
     <div className="absolute bottom-4 left-4 z-10 flex items-end gap-2">
-      <div className="rounded-lg border bg-background/90 p-3 shadow-lg backdrop-blur-sm">
-        <div className="mb-2 flex items-center justify-between text-sm">
-          <span className="font-medium">Min Height</span>
-          <span className="text-muted-foreground">{minHeight} ft</span>
-        </div>
-        <Slider
-          data-testid="height-slider"
-          min={0}
-          max={2000}
-          step={50}
-          value={[minHeight]}
-          onValueChange={([v]) => onMinHeightChange(v)}
-          className="w-48"
-        />
-      </div>
-
       <Popover>
         <PopoverTrigger asChild>
           <button

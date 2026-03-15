@@ -1,17 +1,17 @@
 "use client";
 
 import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-} from "@/components/ui/sheet";
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { formatObjectType } from "@/lib/constants";
 import type { ObjectGeoJsonProperties } from "@/lib/types";
 import type { Feature, Point } from "geojson";
-import { useEffect, useState } from "react";
+import { ExternalLink } from "lucide-react";
 
 interface DetailSheetProps {
   feature: Feature<Point, ObjectGeoJsonProperties> | null;
@@ -19,39 +19,26 @@ interface DetailSheetProps {
 }
 
 export function DetailSheet({ feature, onClose }: DetailSheetProps) {
-  const [side, setSide] = useState<"bottom" | "right">(() =>
-    typeof window !== "undefined" &&
-    window.matchMedia("(min-width: 768px)").matches
-      ? "right"
-      : "bottom"
-  );
-
-  useEffect(() => {
-    const mq = window.matchMedia("(min-width: 768px)");
-    const handler = (e: MediaQueryListEvent) =>
-      setSide(e.matches ? "right" : "bottom");
-    mq.addEventListener("change", handler);
-    return () => mq.removeEventListener("change", handler);
-  }, []);
-
   if (!feature) return null;
   const props = feature.properties;
   const maxHeight = 2000;
   const heightPercent = Math.min((props.AGL / maxHeight) * 100, 100);
+  const [lng, lat] = feature.geometry.coordinates;
+  const googleMapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
 
   return (
-    <Sheet open={!!feature} onOpenChange={(open) => !open && onClose()}>
-      <SheetContent side={side} className="overflow-y-auto">
-        <SheetHeader>
-          <SheetTitle className="flex items-center gap-2">
+    <Dialog open={!!feature} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
             {formatObjectType(props.ObjectType)}
             <Badge variant="secondary">{props.AGL} ft AGL</Badge>
-          </SheetTitle>
-          <SheetDescription>
+          </DialogTitle>
+          <DialogDescription>
             {props.City}, {props.State}
-          </SheetDescription>
-        </SheetHeader>
-        <div className="space-y-4 p-4">
+          </DialogDescription>
+        </DialogHeader>
+        <div className="space-y-4">
           {/* Height bar */}
           <div>
             <div className="mb-1 flex justify-between text-sm">
@@ -90,31 +77,30 @@ export function DetailSheet({ feature, onClose }: DetailSheetProps) {
               </div>
             )}
             <div>
-              <span className="text-muted-foreground">Light Type</span>
-              <p className="font-medium">{props.LT || "None"}</p>
-            </div>
-            <div>
               <span className="text-muted-foreground">Marking</span>
               <p className="font-medium">
                 {props.MarInd === "Y" ? "Yes" : "No"}
               </p>
             </div>
             <div>
-              <span className="text-muted-foreground">Verified</span>
-              <p className="font-medium">
-                {props.Verified === "Y" ? "Yes" : "No"}
-              </p>
-            </div>
-            <div>
               <span className="text-muted-foreground">Coordinates</span>
               <p className="font-medium text-xs">
-                {feature.geometry.coordinates[1].toFixed(4)},{" "}
-                {feature.geometry.coordinates[0].toFixed(4)}
+                {lat.toFixed(4)}, {lng.toFixed(4)}
               </p>
             </div>
           </div>
+
+          <a
+            href={googleMapsUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+          >
+            <ExternalLink className="size-4" />
+            Open in Google Maps
+          </a>
         </div>
-      </SheetContent>
-    </Sheet>
+      </DialogContent>
+    </Dialog>
   );
 }
