@@ -13,7 +13,8 @@
     "db:reinitialize": "yarn db:reset && yarn db:seed",
     "db:reset": "prisma db push --force-reset; prisma generate",
     "db:seed": "ts-node ./scripts/seedDB.ts",
-    "db:studio": "prisma studio"
+    "db:studio": "prisma studio",
+    "benchmark": "ts-node src/benchmark.ts"
   },
   "devDependencies": {
     "@types/geojson": "^7946.0.10",
