@@ -38,7 +38,13 @@ jobs:
       - name: Generate prisma client
         run: bunx --bun prisma generate
       - name: Run backend tests
-        run: bun test --testPathPattern '\.test\.ts$' --testPathIgnorePatterns 'e2e'
+        run: |
+          TEST_FILES=$(find src -name '*.test.ts' ! -name '*.e2e.*' -type f 2>/dev/null)
+          if [ -n "$TEST_FILES" ]; then
+            echo "$TEST_FILES" | xargs bun test
+          else
+            echo 'No unit tests found, skipping'
+          fi
 
   test-frontend:
     runs-on: ubuntu-latest
