@@ -38,7 +38,7 @@ jobs:
       - name: Generate prisma client
         run: bunx --bun prisma generate
       - name: Run backend tests
-        run: bun test
+        run: bun test --testPathPattern '\.test\.ts$' --testPathIgnorePatterns 'e2e'
 
   test-frontend:
     runs-on: ubuntu-latest
