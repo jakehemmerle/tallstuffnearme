@@ -5,3 +5,4 @@ client-react
 .git
 *.md
 infra
+!infra/package.json
