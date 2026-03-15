@@ -6,7 +6,7 @@ COPY infra/package.json ./infra/
 RUN bun install --frozen-lockfile
 COPY prisma ./prisma
 COPY prisma.config.ts ./
-RUN DATABASE_URL="postgresql://dummy@localhost/dummy" bunx --bun prisma generate
+RUN bunx --bun prisma generate
 COPY src ./src
 COPY tsconfig.json ./
 
