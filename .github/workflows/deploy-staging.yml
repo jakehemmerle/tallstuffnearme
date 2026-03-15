@@ -41,6 +41,8 @@ jobs:
         run: bun install --frozen-lockfile
       - name: Push prisma schema
         run: bunx --bun prisma db push
+      - name: Generate prisma client
+        run: bunx --bun prisma generate
       - name: Run backend tests
         run: bun test
 
