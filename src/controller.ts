@@ -1,4 +1,4 @@
-import { FAAObject } from "@prisma/client";
+import { FAAObject } from "./generated/prisma/client";
 import { _distanceBetweenPoints } from "./data";
 import { FAAObjectWithRelativeLocation, ObjectQueryRequest } from "./types";
 import { ObjectResponder } from "./common";

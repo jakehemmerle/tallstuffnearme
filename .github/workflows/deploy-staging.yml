@@ -30,16 +30,19 @@ jobs:
       DATABASE_URL: postgresql://postgres:test@localhost:5432/tallshit_test
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: oven-sh/setup-bun@v2
         with:
-          node-version: 18
-          cache: yarn
-      - name: Install backend dependencies
-        run: yarn install --immutable
+          bun-version: latest
+      - uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
       - name: Push prisma schema
-        run: npx prisma db push
+        run: bunx --bun prisma db push
       - name: Run backend tests
-        run: yarn test --testPathIgnorePatterns=e2e --passWithNoTests
+        run: bun test
 
   deploy:
     needs: test
@@ -50,10 +53,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
+      - uses: oven-sh/setup-bun@v2
         with:
-          node-version: 18
-          cache: yarn
+          bun-version: latest
 
       - uses: google-github-actions/auth@v2
         with:
@@ -62,13 +64,17 @@ jobs:
       - uses: google-github-actions/setup-gcloud@v2
 
       # Run prisma migration
-      - name: Install backend dependencies
-        run: yarn install --immutable
+      - uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
       - name: Run prisma db push
         run: |
-          cd infra && npm ci && cd ..
+          cd infra && bun install && cd ..
           DB_URL=$(pulumi -C infra stack output stagingDbUrl -s shared --show-secrets)
-          DATABASE_URL="$DB_URL" npx prisma db push
+          DATABASE_URL="$DB_URL" bunx --bun prisma db push
         env:
           PULUMI_BACKEND_URL: gs://tallshitnearme-pulumi-state
           PULUMI_CONFIG_PASSPHRASE: ${{ secrets.PULUMI_CONFIG_PASSPHRASE }}

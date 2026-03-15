@@ -24,16 +24,19 @@ jobs:
       DATABASE_URL: postgresql://postgres:test@localhost:5432/tallshit_test
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: oven-sh/setup-bun@v2
         with:
-          node-version: 18
-          cache: yarn
-      - name: Install backend dependencies
-        run: yarn install --immutable
+          bun-version: latest
+      - uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
       - name: Push prisma schema
-        run: npx prisma db push
+        run: bunx --bun prisma db push
       - name: Run backend tests
-        run: yarn test --testPathIgnorePatterns=e2e --passWithNoTests
+        run: bun test
 
   test-frontend:
     runs-on: ubuntu-latest
@@ -42,17 +45,16 @@ jobs:
         working-directory: web
     steps:
       - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
+      - uses: oven-sh/setup-bun@v2
         with:
-          version: 10
-      - uses: actions/setup-node@v4
+          bun-version: latest
+      - uses: actions/cache@v4
         with:
-          node-version: 22
-          cache: pnpm
-          cache-dependency-path: web/pnpm-lock.yaml
-      - name: Install frontend dependencies
-        run: pnpm install --frozen-lockfile
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
+      - name: Install dependencies
+        run: cd .. && bun install --frozen-lockfile
       - name: Lint frontend
-        run: pnpm lint
+        run: bun run lint
       - name: Build frontend
-        run: pnpm build
+        run: bun run build

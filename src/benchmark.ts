@@ -1,7 +1,7 @@
 import { performance } from 'perf_hooks';
-import request from 'supertest';
 import app from './app';
 import prisma from './prisma';
+import type { Server } from 'http';
 
 // --- CLI args ---
 const iterationsArg = process.argv.find(a => a.startsWith('--iterations='));
@@ -87,18 +87,44 @@ function buildBody(s: Scenario) {
   return body;
 }
 
+// --- Server setup ---
+let server: Server;
+let baseUrl: string;
+
+async function startServer(): Promise<void> {
+  await new Promise<void>((resolve) => {
+    server = app.listen(0, () => {
+      const addr = server.address() as { port: number };
+      baseUrl = `http://localhost:${addr.port}`;
+      resolve();
+    });
+  });
+}
+
+async function stopServer(): Promise<void> {
+  await new Promise<void>((resolve, reject) => {
+    server.close((err) => (err ? reject(err) : resolve()));
+  });
+}
+
 // --- Run one iteration ---
 async function runOnce(s: Scenario): Promise<{ totalMs: number; dbMs: number; features: number }> {
   dbTimeAccumulator = 0;
   const start = performance.now();
-  const res = await request(app).post('/objects').send(buildBody(s));
+  const res = await fetch(`${baseUrl}/objects`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(buildBody(s)),
+  });
   const totalMs = performance.now() - start;
   if (res.status !== 200) throw new Error(`${s.name}: HTTP ${res.status}`);
-  return { totalMs, dbMs: dbTimeAccumulator, features: res.body.features?.length ?? 0 };
+  const body = await res.json() as any;
+  return { totalMs, dbMs: dbTimeAccumulator, features: body.features?.length ?? 0 };
 }
 
 // --- Main ---
 async function main() {
+  await startServer();
   console.log(`Benchmark: ${WARMUP} warmup + ${ITERATIONS} timed iterations per scenario\n`);
 
   // Table header
@@ -177,6 +203,7 @@ async function main() {
   }
 
   console.log(sep);
+  await stopServer();
   await prisma.$disconnect();
 }
 

@@ -1,27 +1,26 @@
-FROM node:18-slim AS backend-builder
+FROM oven/bun:1-slim AS backend-builder
 WORKDIR /app
-RUN apt-get update -y && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
-COPY package.json yarn.lock .yarnrc.yml ./
-COPY .yarn .yarn
-RUN yarn install --immutable
+COPY package.json bun.lock ./
+COPY web/package.json ./web/
+COPY infra/package.json ./infra/
+RUN bun install --frozen-lockfile
 COPY prisma ./prisma
-RUN npx prisma generate
+RUN bunx --bun prisma generate
 COPY src ./src
 COPY tsconfig.json ./
 
-FROM node:22-slim AS frontend-builder
-WORKDIR /web
-RUN corepack enable && corepack prepare pnpm@10 --activate
-COPY web/package.json web/pnpm-lock.yaml ./
-RUN pnpm install --frozen-lockfile
+FROM oven/bun:1-slim AS frontend-builder
+WORKDIR /app
+COPY --from=backend-builder /app/node_modules ./node_modules
+COPY --from=backend-builder /app/web/node_modules ./web/node_modules
+WORKDIR /app/web
 COPY web/ ./
 ENV NEXT_PUBLIC_API_URL=""
-RUN pnpm build
+RUN bun run build
 
-FROM node:18-slim AS runner
+FROM oven/bun:1-slim AS runner
 WORKDIR /app
-RUN apt-get update -y && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
 COPY --from=backend-builder /app ./
-COPY --from=frontend-builder /web/out ./public
+COPY --from=frontend-builder /app/web/out ./public
 EXPOSE 3001
-CMD ["npx", "ts-node", "src/index.ts"]
+CMD ["bun", "run", "src/index.ts"]

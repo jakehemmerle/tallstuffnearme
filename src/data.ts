@@ -1,7 +1,7 @@
 // This file includes types, functions, and helpers for querying FAA data with prisma
 
 import { readFileSync } from 'fs';
-import { Prisma, ObjectType } from '@prisma/client';
+import { Prisma, ObjectType } from './generated/prisma/client';
 import { Coordinates } from './types'
 import prisma from './prisma';
 

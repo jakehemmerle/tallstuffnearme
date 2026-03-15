@@ -1,8 +1,6 @@
-import { PrismaClient } from '@prisma/client'
+import prisma from '../src/prisma';
 import { _insertDatFileIntoDB } from '../src/data';
 import { readdirSync } from 'fs';
-
-const prisma = new PrismaClient()
 
 // populates full DB; fails at 
 async function populateDB() {

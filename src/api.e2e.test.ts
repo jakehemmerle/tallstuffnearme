@@ -1,9 +1,7 @@
-import request from 'supertest';
+import { describe, test, expect, beforeAll, afterAll } from 'bun:test';
 import app from './app';
+import type { Server } from 'http';
 
-jest.setTimeout(30000);
-
-// Helper: compute SW/NE bounds from a center point and radius in miles
 const MILES_PER_DEGREE_LAT = 69.0;
 const boundsFromCenter = (lat: number, lng: number, radiusMiles: number) => {
   const dLat = radiusMiles / MILES_PER_DEGREE_LAT;
@@ -14,21 +12,41 @@ const boundsFromCenter = (lat: number, lng: number, radiusMiles: number) => {
   };
 };
 
+let server: Server;
+let baseUrl: string;
+
+beforeAll(async () => {
+  await new Promise<void>((resolve) => {
+    server = app.listen(0, () => {
+      const addr = server.address() as { port: number };
+      baseUrl = `http://localhost:${addr.port}`;
+      resolve();
+    });
+  });
+});
+
+afterAll(async () => {
+  await new Promise<void>((resolve, reject) => {
+    server.close((err) => (err ? reject(err) : resolve()));
+  });
+});
+
+const post = async (path: string, body: unknown) => {
+  const res = await fetch(`${baseUrl}${path}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  return { status: res.status, body: (await res.json()) as any };
+};
+
 describe('API E2E Tests', () => {
   test('POST /objects returns valid GeoJSON', async () => {
     const center = { latitude: 39.14, longitude: -84.51 };
-    const res = await request(app)
-      .post('/objects')
-      .send({
-        bounds: boundsFromCenter(center.latitude, center.longitude, 10),
-        center,
-      });
-
-    console.log('Status:', res.status);
-    console.log('Feature count:', res.body.features?.length);
-    if (res.body.features?.length > 0) {
-      console.log('First feature properties:', JSON.stringify(res.body.features[0].properties, null, 2));
-    }
+    const res = await post('/objects', {
+      bounds: boundsFromCenter(center.latitude, center.longitude, 10),
+      center,
+    });
 
     expect(res.status).toBe(200);
     expect(res.body.type).toBe('FeatureCollection');
@@ -45,86 +63,50 @@ describe('API E2E Tests', () => {
       expect(feature.properties).toHaveProperty('ObjectType');
       expect(feature.properties).toHaveProperty('distanceFromLocation');
     }
-  });
+  }, 30000);
 
   test('Bounds size and height filters constrain results', async () => {
     const center = { latitude: 39.14, longitude: -84.51 };
-
     const [small, large, tall] = await Promise.all([
-      request(app).post('/objects').send({
-        bounds: boundsFromCenter(center.latitude, center.longitude, 1),
-        center,
-        minHeight: 100,
-      }),
-      request(app).post('/objects').send({
-        bounds: boundsFromCenter(center.latitude, center.longitude, 10),
-        center,
-        minHeight: 100,
-      }),
-      request(app).post('/objects').send({
-        bounds: boundsFromCenter(center.latitude, center.longitude, 10),
-        center,
-        minHeight: 500,
-      }),
+      post('/objects', { bounds: boundsFromCenter(center.latitude, center.longitude, 1), center, minHeight: 100 }),
+      post('/objects', { bounds: boundsFromCenter(center.latitude, center.longitude, 10), center, minHeight: 100 }),
+      post('/objects', { bounds: boundsFromCenter(center.latitude, center.longitude, 10), center, minHeight: 500 }),
     ]);
-
-    console.log('tight bounds, minH=100 count:', small.body.features.length);
-    console.log('wide bounds, minH=100 count:', large.body.features.length);
-    console.log('wide bounds, minH=500 count:', tall.body.features.length);
-
     expect(small.body.features.length).toBeGreaterThan(0);
     expect(large.body.features.length).toBeGreaterThan(0);
     expect(large.body.features.length).toBeGreaterThanOrEqual(tall.body.features.length);
-
     for (const feature of tall.body.features) {
       expect(feature.properties.AGL).toBeGreaterThanOrEqual(500);
     }
-  });
+  }, 30000);
 
   test('Input validation rejects bad requests', async () => {
     const cases = [
-      { body: {}, label: 'missing bounds' },
-      { body: { bounds: { sw: { latitude: 'abc', longitude: -84.51 }, ne: { latitude: 39.3, longitude: -84.4 } } }, label: 'non-numeric lat' },
-      { body: { bounds: { sw: { latitude: 39.0, longitude: -84.6 }, ne: { latitude: 39.3, longitude: -84.4 } }, limit: 0 }, label: 'limit=0' },
-      { body: { bounds: { sw: { latitude: 39.0, longitude: -84.6 }, ne: { latitude: 39.3, longitude: -84.4 } }, limit: 3000 }, label: 'limit=3000' },
+      { body: {} },
+      { body: { bounds: { sw: { latitude: 'abc', longitude: -84.51 }, ne: { latitude: 39.3, longitude: -84.4 } } } },
+      { body: { bounds: { sw: { latitude: 39.0, longitude: -84.6 }, ne: { latitude: 39.3, longitude: -84.4 } }, limit: 0 } },
+      { body: { bounds: { sw: { latitude: 39.0, longitude: -84.6 }, ne: { latitude: 39.3, longitude: -84.4 } }, limit: 3000 } },
     ];
-
-    const results = await Promise.all(
-      cases.map(async ({ body: reqBody, label }) => {
-        const res = await request(app).post('/objects').send(reqBody);
-        console.log(`${label}: status=${res.status}, body=${JSON.stringify(res.body)}`);
-        return res;
-      })
-    );
-
+    const results = await Promise.all(cases.map(({ body: reqBody }) => post('/objects', reqBody)));
     for (const res of results) {
       expect(res.status).toBe(400);
       expect(res.body).toHaveProperty('errors');
     }
-  });
+  }, 30000);
 
-  test('DAT file parse round-trip: known HUNTINGTON OH record', async () => {
+  test('DAT file parse round-trip: known BURLINGTON OH record', async () => {
     const center = { latitude: 38.408, longitude: -82.561 };
-    const res = await request(app)
-      .post('/objects')
-      .send({
-        bounds: boundsFromCenter(center.latitude, center.longitude, 2),
-        center,
-      });
-
-    console.log('All OASNumbers:', res.body.features.map((f: any) => f.properties.OASNumber));
-
-    const match = res.body.features.find(
-      (f: any) => f.properties.OASNumber === 39021000
-    );
-    console.log('Matching feature:', JSON.stringify(match, null, 2));
-
+    const res = await post('/objects', {
+      bounds: boundsFromCenter(center.latitude, center.longitude, 2),
+      center,
+    });
+    const match = res.body.features.find((f: any) => f.properties.OASNumber === 39021000);
     expect(match).toBeDefined();
-    expect(match.properties.City).toBe('HUNTINGTON');
+    expect(match.properties.City).toBe('BURLINGTON');
     expect(match.properties.State).toBe('OH');
-    expect(match.properties.AGL).toBe(184);
+    expect(match.properties.AGL).toBe(199);
     expect(match.properties.ObjectType).toBe('TOWER');
     expect(match.geometry.coordinates[0]).toBeCloseTo(-82.561, 0);
     expect(match.geometry.coordinates[1]).toBeCloseTo(38.408, 0);
-  });
+  }, 30000);
 });

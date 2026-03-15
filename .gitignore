@@ -25,6 +25,7 @@ build
 
 # prisma
 prisma/dev.db
+src/generated/prisma
 
 *.csv
 *.geojson

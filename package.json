@@ -4,40 +4,41 @@
   "main": "src/index.ts",
   "author": "Jake Hemmerle <jakehemmerle@protonmail.com>",
   "license": "MIT",
+  "workspaces": [
+    "web",
+    "infra"
+  ],
   "scripts": {
-    "dev": "ts-node ./src/index.ts",
-    "csv": "ts-node ./bin/csv.ts",
-    "geojson": "ts-node ./bin/geojson.ts",
-    "test": "jest",
-    "test:e2e": "jest --testPathPattern=e2e",
-    "db:reinitialize": "yarn db:reset && yarn db:seed",
-    "db:reset": "prisma db push --force-reset; prisma generate",
-    "db:seed": "ts-node ./scripts/seedDB.ts",
-    "db:studio": "prisma studio",
-    "benchmark": "ts-node src/benchmark.ts"
+    "dev": "bun run ./src/index.ts",
+    "csv": "bun run ./bin/csv.ts",
+    "geojson": "bun run ./bin/geojson.ts",
+    "test": "bun test",
+    "test:e2e": "bun test --test-name-pattern e2e",
+    "db:reinitialize": "bun run db:reset && bun run db:seed",
+    "db:reset": "bunx --bun prisma db push --force-reset && bunx --bun prisma generate",
+    "db:seed": "bun run ./scripts/seedDB.ts",
+    "db:studio": "bunx --bun prisma studio",
+    "benchmark": "bun run src/benchmark.ts"
   },
   "devDependencies": {
+    "@types/bun": "^1.3.10",
     "@types/geojson": "^7946.0.10",
-    "@types/jest": "^27.0.3",
-    "@types/node": "^17.0.2",
-    "@types/supertest": "^7.2.0",
+    "@types/node": "^25.5.0",
     "@types/yargs": "^17.0.8",
-    "jest": "^27.4.5",
-    "prisma": "^4.2.1",
-    "supertest": "^7.2.2",
-    "ts-node": "^10.4.0",
-    "typescript": "^4.5.4"
+    "prisma": "^7.2.0",
+    "typescript": "^5.4"
   },
   "dependencies": {
-    "@prisma/client": "^4.2.1",
+    "@prisma/adapter-neon": "^7.5.0",
+    "@prisma/adapter-pg": "^7.5.0",
+    "@prisma/client": "^7.5.0",
     "@types/express": "^4.17.13",
     "cors": "^2.8.5",
     "csv-stringify": "^6.2.0",
     "dotenv": "^16.0.1",
     "express": "^4.18.1",
     "express-validator": "^6.14.2",
-    "ts-jest": "^27.1.2",
+    "pg": "^8.20.0",
     "yargs": "^17.3.1"
-  },
-  "packageManager": "yarn@3.1.1"
+  }
 }

@@ -1,4 +1,4 @@
-import { FAAObject, ObjectType } from '@prisma/client';
+import { FAAObject, ObjectType } from './generated/prisma/client';
 
 type Coordinates = {
     latitude: number,
