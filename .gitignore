@@ -1,10 +1,10 @@
 # Environment variables (contains secrets)
 .env
 
-# NPM dependencies
+# Dependencies
 node_modules
 
-# If using vscode
+# IDE
 .vscode
 
 # DAT files
@@ -12,35 +12,20 @@ faa-data/*.DAT
 faa-data/*.Dat
 faa-data/*.pdf
 
-# build
-build
-
-# yarn2
-.yarn/*
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/sdks
-!.yarn/versions
-
-# prisma
-prisma/dev.db
+# Prisma generated client
 src/generated/prisma
 
+# Output files
 *.csv
 *.geojson
 *.json
 !**/package.json
 !**/tsconfig.json
 !**/components.json
-!**/package-lock.json
 
 # Next.js static export
 web/out
 
-# Pulumi
-infra/node_modules
-
-# Dolt database files (added by bd init)
+# Dolt database files
 .dolt/
 *.db
