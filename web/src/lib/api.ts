@@ -1,4 +1,5 @@
 import { BACKEND_URL } from "./constants";
+import { analyticsHeaders } from "./analytics";
 import type { ObjectQueryRequest, ObjectGeoJson } from "./types";
 
 export async function fetchObjects(
@@ -7,7 +8,7 @@ export async function fetchObjects(
 ): Promise<ObjectGeoJson> {
   const res = await fetch(`${BACKEND_URL}/objects`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", ...analyticsHeaders() },
     body: JSON.stringify(params),
     signal,
   });

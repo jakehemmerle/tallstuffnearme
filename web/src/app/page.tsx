@@ -7,6 +7,11 @@ import { FilterBar } from "@/components/filter-bar";
 import { DetailSheet } from "@/components/detail-sheet";
 import { useFilters } from "@/hooks/use-filters";
 import { useObjects } from "@/hooks/use-objects";
+import {
+  objectAnalyticsPayload,
+  startAnalyticsSession,
+  trackEvent,
+} from "@/lib/analytics";
 import type { Bounds, ObjectGeoJsonProperties } from "@/lib/types";
 import type { Feature, Point } from "geojson";
 
@@ -38,10 +43,32 @@ export default function Home() {
 
   const handleFeatureClick = useCallback(
     (feature: Feature<Point, ObjectGeoJsonProperties>) => {
+      trackEvent("object_detail_open", objectAnalyticsPayload(feature));
       setSelectedFeature(feature);
     },
     []
   );
+
+  const handleToggleObjectType = useCallback(
+    (type: Parameters<typeof toggleObjectType>[0]) => {
+      trackEvent("filter_toggle", {
+        filter: "object_type",
+        objectType: type,
+        action: excludeObjectTypes.includes(type) ? "include" : "exclude",
+      });
+      toggleObjectType(type);
+    },
+    [excludeObjectTypes, toggleObjectType]
+  );
+
+  const handleGoogleMapsClick = useCallback(
+    (feature: Feature<Point, ObjectGeoJsonProperties>) => {
+      trackEvent("google_maps_click", objectAnalyticsPayload(feature));
+    },
+    []
+  );
+
+  useEffect(() => startAnalyticsSession(), []);
 
   // Re-fetch when filters change
   useEffect(() => {
@@ -63,11 +90,12 @@ export default function Home() {
       />
       <FilterBar
         excludeObjectTypes={excludeObjectTypes}
-        onToggleObjectType={toggleObjectType}
+        onToggleObjectType={handleToggleObjectType}
       />
       <DetailSheet
         feature={selectedFeature}
         onClose={() => setSelectedFeature(null)}
+        onGoogleMapsClick={handleGoogleMapsClick}
       />
     </div>
   );
