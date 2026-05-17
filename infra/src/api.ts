@@ -35,6 +35,14 @@ export const service = new gcp.cloudrunv2.Service(name("app"), {
               },
             },
           },
+          {
+            name: "TALLSTUFF_ENV",
+            value: environment!,
+          },
+          {
+            name: "ANALYTICS_ENABLED",
+            value: environment === "prod" ? "true" : "false",
+          },
         ],
         resources: {
           limits: {

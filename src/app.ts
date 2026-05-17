@@ -4,6 +4,7 @@ import express, { json, Request, Response } from 'express';
 import { body, validationResult } from 'express-validator';
 import { defaultQuery, parseRequestBody, searchObjects } from './controller';
 import { ObjectQueryRequest } from './types';
+import { recordClientAnalyticsEvent, recordObjectSearch } from './analytics';
 
 const app = express();
 app.use(cors());
@@ -12,6 +13,11 @@ app.use(json());
 // Serve static frontend (Next.js export)
 const staticDir = path.join(__dirname, '..', 'public');
 app.use(express.static(staticDir));
+
+app.post("/analytics", (req: Request, res: Response) => {
+  const logged = recordClientAnalyticsEvent(req.body, req);
+  res.status(202).json({ ok: true, logged });
+});
 
 // PROD query function
 app.post(
@@ -31,8 +37,12 @@ app.post(
       return res.status(400).json({ errors: errors.array() });
     }
     const query: ObjectQueryRequest = parseRequestBody(req.body);
+    const startedAt = Date.now();
     searchObjects(query)
-      .then((result) => res.json(result)).catch(() => res.status(400).json({ error: "could not query" }));
+      .then((result) => {
+        recordObjectSearch(req, query, result, Date.now() - startedAt);
+        res.json(result);
+      }).catch(() => res.status(400).json({ error: "could not query" }));
   }
 )
 

@@ -41,6 +41,22 @@ const post = async (path: string, body: unknown) => {
 };
 
 describe('API E2E Tests', () => {
+  test('POST /analytics accepts product analytics events', async () => {
+    const res = await post('/analytics', {
+      eventName: 'object_detail_open',
+      visitorId: 'visitor-test',
+      sessionId: 'session-test',
+      occurredAt: new Date().toISOString(),
+      page: '/',
+      payload: {
+        oasNumber: 123,
+      },
+    });
+
+    expect(res.status).toBe(202);
+    expect(res.body).toEqual({ ok: true, logged: false });
+  });
+
   test('POST /objects returns valid GeoJSON', async () => {
     const center = { latitude: 39.14, longitude: -84.51 };
     const res = await post('/objects', {
