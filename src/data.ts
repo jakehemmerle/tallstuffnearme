@@ -95,6 +95,7 @@ export const _insertDatFileIntoDB = async (path: string): Promise<void> => {
 
     await prisma.fAAObject.createMany({
         data: insertableObjects,
+        skipDuplicates: true,
     })
 
     return Promise.resolve();

@@ -41,6 +41,13 @@ const post = async (path: string, body: unknown) => {
 };
 
 describe('API E2E Tests', () => {
+  test('GET /readyz confirms the database contains FAA records', async () => {
+    const response = await fetch(`${baseUrl}/readyz`);
+
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ ok: true });
+  });
+
   test('POST /analytics accepts product analytics events', async () => {
     const res = await post('/analytics', {
       eventName: 'object_detail_open',
@@ -110,7 +117,7 @@ describe('API E2E Tests', () => {
     }
   }, 30000);
 
-  test('DAT file parse round-trip: known BURLINGTON OH record', async () => {
+  test('Known BURLINGTON OH record has the expected location and height', async () => {
     const center = { latitude: 38.408, longitude: -82.561 };
     const res = await post('/objects', {
       bounds: boundsFromCenter(center.latitude, center.longitude, 2),

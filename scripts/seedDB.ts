@@ -1,26 +1,16 @@
-import prisma from '../src/prisma';
-import { _insertDatFileIntoDB } from '../src/data';
-import { readdirSync } from 'fs';
+import { readdir } from 'node:fs/promises';
+import path from 'node:path';
+import { requireDevelopmentDatabase } from './development-database';
 
-// populates full DB; fails at 
-async function populateDB() {
-  // Only include US states. Non-state files include objects that don't have a OASNumber, which is the primary key for the DB
-  let fileNames: string[] = await readdirSync("./faa-data", "utf-8").filter((fileName) => fileName.includes("-"));
+requireDevelopmentDatabase();
+const { default: prisma } = await import('../src/prisma');
+const { _insertDatFileIntoDB } = await import('../src/data');
+const directory = path.resolve(process.argv[2] ?? 'faa-data');
 
-  console.log('To be added to DB:');
-  console.log(fileNames);
-
-  for (let fileName of fileNames) {
-    const fullName = `./faa-data/${fileName}`
-    console.log(`adding ${fullName}`)
-    await _insertDatFileIntoDB(fullName);
-  }
+try {
+  const files = (await readdir(directory)).filter((name) => name.includes('-') && /\.dat$/i.test(name)).sort();
+  if (files.length === 0) throw new Error('No state DAT files found in the supplied directory.');
+  for (const file of files) await _insertDatFileIntoDB(path.join(directory, file));
+} finally {
+  await prisma.$disconnect();
 }
-
-populateDB()
-  .catch((e) => {
-    throw e
-  })
-  .finally(async () => {
-    await prisma.$disconnect()
-  })

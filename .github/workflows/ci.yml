@@ -5,11 +5,11 @@ on:
     branches: [master]
 
 jobs:
-  test-backend:
-    runs-on: ubuntu-latest
+  test:
+    runs-on: ubuntu-24.04
     services:
       postgres:
-        image: postgres:14
+        image: postgres:17
         env:
           POSTGRES_PASSWORD: test
           POSTGRES_DB: tallshit_test
@@ -22,47 +22,47 @@ jobs:
           --health-retries=5
     env:
       DATABASE_URL: postgresql://postgres:test@localhost:5432/tallshit_test
+      TALLSTUFF_ENV: test
+      ANALYTICS_ENABLED: "false"
     steps:
       - uses: actions/checkout@v4
-      - uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: latest
+      - uses: cachix/install-nix-action@v31
       - uses: actions/cache@v4
         with:
           path: ~/.bun/install/cache
           key: ${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
       - name: Install dependencies
-        run: bun install --frozen-lockfile
-      - name: Push prisma schema
-        run: bunx --bun prisma db push
+        run: nix develop --command bun install --frozen-lockfile
       - name: Generate prisma client
-        run: bunx --bun prisma generate
-      - name: Run backend tests
-        run: |
-          TEST_FILES=$(find src -name '*.test.ts' ! -name '*.e2e.*' -type f 2>/dev/null)
-          if [ -n "$TEST_FILES" ]; then
-            echo "$TEST_FILES" | xargs bun test
-          else
-            echo 'No unit tests found, skipping'
-          fi
-
-  test-frontend:
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: web
-    steps:
-      - uses: actions/checkout@v4
-      - uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: latest
-      - uses: actions/cache@v4
-        with:
-          path: ~/.bun/install/cache
-          key: ${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
-      - name: Install dependencies
-        run: cd .. && bun install --frozen-lockfile
+        run: nix develop --command bunx --no-install --bun prisma generate
+      - name: Apply committed migrations
+        run: nix develop --command bash bin/tsnm migrate
+      - name: Check migration schema matches Prisma
+        run: nix develop --command bunx --no-install --bun prisma migrate diff --from-config-datasource --to-schema prisma/schema.prisma --exit-code
+      - name: Seed test records
+        run: nix develop --command bash bin/tsnm seed-fixtures
+      - name: Run API and CLI tests
+        run: nix develop --command bun test ./src ./tests
       - name: Lint frontend
-        run: bun run lint
-      - name: Build frontend
-        run: bun run build
+        run: nix develop --command bash -c 'cd web && bun run lint'
+      - name: Build packaged application
+        run: nix build .#tallshitnearme
+      - name: Install browser
+        run: nix develop --command bash -c 'cd web && bunx --no-install playwright install --with-deps --only-shell chromium'
+      - name: Run browser component tests
+        env:
+          PLAYWRIGHT_SERVER_COMMAND: ../result/bin/tallshitnearme
+          PORT: "3000"
+        run: nix develop --command bash -c 'cd web && bun run test:e2e'
+      - name: Run browser acceptance against packaged application
+        env:
+          PLAYWRIGHT_REAL_API: "1"
+          PLAYWRIGHT_SERVER_COMMAND: ../result/bin/tallshitnearme
+        run: nix develop --command bash -c 'cd web && bun run test:e2e'
+      - name: Preserve browser failure report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: web/playwright-report/
+          retention-days: 7

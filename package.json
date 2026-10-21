@@ -13,7 +13,7 @@
     "test": "bun test",
     "test:e2e": "bun test --test-name-pattern e2e",
     "db:reinitialize": "bun run db:reset && bun run db:seed",
-    "db:reset": "bunx --bun prisma db push --force-reset && bunx --bun prisma generate",
+    "db:reset": "bun run ./scripts/resetDB.ts",
     "db:seed": "bun run ./scripts/seedDB.ts",
     "db:studio": "bunx --bun prisma studio",
     "benchmark": "bun run src/benchmark.ts"
