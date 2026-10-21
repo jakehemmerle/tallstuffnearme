@@ -3,7 +3,6 @@ import { test, expect } from "@playwright/test";
 test.use({
   geolocation: { latitude: 39.14, longitude: -84.51, accuracy: 1000 },
   permissions: ["geolocation"],
-  reducedMotion: "reduce",
 });
 
 test("the packaged API serves seeded PostgreSQL records", async ({ request }) => {
