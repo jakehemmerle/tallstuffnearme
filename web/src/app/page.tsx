@@ -18,7 +18,7 @@ import type { Feature, Point } from "geojson";
 export default function Home() {
   const { minHeight, setMinHeight, excludeObjectTypes, toggleObjectType } =
     useFilters();
-  const { data, loading, fetch: fetchData } = useObjects({
+  const { data, loading, error, fetch: fetchData } = useObjects({
     minHeight,
     excludeObjectTypes,
   });
@@ -82,12 +82,31 @@ export default function Home() {
       <Header
         objectCount={data?.features?.length ?? 0}
         loading={loading}
+        error={error}
       />
       <MapView
         data={data}
         onBoundsChange={handleBoundsChange}
         onFeatureClick={handleFeatureClick}
       />
+      {error && (
+        <div role="alert" className="absolute bottom-20 left-4 right-4 z-10 flex items-center justify-between gap-3 rounded-lg border bg-background/95 px-3 py-2 text-sm shadow-lg sm:left-auto">
+          <p>
+            Could not load objects.
+            {data && <span> Map data may be out of date.</span>}
+          </p>
+          <button
+            className="rounded-md bg-primary px-3 py-1.5 font-medium text-primary-foreground hover:bg-primary/90"
+            onClick={() => {
+              if (boundsRef.current) {
+                fetchData(boundsRef.current.bounds, boundsRef.current.center);
+              }
+            }}
+          >
+            Retry
+          </button>
+        </div>
+      )}
       <FilterBar
         excludeObjectTypes={excludeObjectTypes}
         onToggleObjectType={handleToggleObjectType}
