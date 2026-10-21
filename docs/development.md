@@ -7,14 +7,14 @@ and the JavaScript dependency closure. Run commands from the repository root:
 nix develop
 tsnm setup
 export TALLSTUFF_ENV=dev
-set -a
-. /run/tallshitnearme/app.env
-set +a
+export TSNM_ENV_FILE=/run/tallshitnearme/app.env
 tsnm db-status
 tsnm dev
 ```
 
-The environment file exists on `tallshitnearme-dev`. On another machine, supply
+The VM profile already sets `TSNM_ENV_FILE` on `tallshitnearme-dev`. Database
+commands load this trusted shell environment file when `DATABASE_URL` is unset
+or empty. An explicit `DATABASE_URL` takes precedence. On another machine, supply
 `DATABASE_URL` for a local `tallshit_dev` database through your secret manager.
 Do not put passwords in shell arguments or commit `.env` files. Next serves the
 development UI on port 3000 and the API on port 3001. For a remote browser, set

@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 import { spawnSync } from 'node:child_process';
-import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import pg from 'pg';
@@ -55,6 +55,44 @@ describe('CLI database write protection', () => {
 });
 
 describe('CLI against seeded PostgreSQL', () => {
+  test('db-status loads the runtime environment file and honors an explicit database URL', async () => {
+    const connection = process.env.DATABASE_URL;
+    if (!connection) throw new Error('The test database URL is required.');
+    const directory = await mkdtemp(path.join(tmpdir(), 'tsnm-environment-'));
+    try {
+      const environmentFile = path.join(directory, 'app.env');
+      await writeFile(environmentFile, `DATABASE_URL='${connection.replaceAll("'", "'\\''")}'\n`, { mode: 0o600 });
+      const loaded = runCli(['db-status'], { DATABASE_URL: '', TSNM_ENV_FILE: environmentFile });
+      expect(loaded.status).toBe(0);
+      expect(JSON.parse(loaded.stdout)).toMatchObject({
+        identity: [{ database: new URL(connection).pathname.slice(1) }],
+        faaObjects: 4,
+      });
+
+      await writeFile(environmentFile, "DATABASE_URL='postgresql://ignored@127.0.0.1:1/ignored'\n");
+      const overridden = runCli(['db-status'], { DATABASE_URL: connection, TSNM_ENV_FILE: environmentFile });
+      expect(overridden.status).toBe(0);
+      expect(JSON.parse(overridden.stdout)).toEqual(JSON.parse(loaded.stdout));
+    } finally {
+      await rm(directory, { recursive: true, force: true });
+    }
+  }, 12_000);
+
+  test('a missing runtime environment file fails clearly while help remains available', async () => {
+    const directory = await mkdtemp(path.join(tmpdir(), 'tsnm-missing-environment-'));
+    try {
+      const environment = { DATABASE_URL: '', TSNM_ENV_FILE: path.join(directory, 'missing.env') };
+      const status = runCli(['db-status'], environment);
+      expect(status.status).toBe(2);
+      expect(status.stderr).toContain('Cannot read the database environment file specified by TSNM_ENV_FILE.');
+      const help = runCli(['help'], environment);
+      expect(help.status).toBe(0);
+      expect(help.stdout).toContain('Usage: tsnm');
+    } finally {
+      await rm(directory, { recursive: true, force: true });
+    }
+  });
+
   test('fixture seeding is repeatable and preserves the row count', async () => {
     const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
     try {

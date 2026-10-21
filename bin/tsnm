@@ -7,6 +7,20 @@ command="${1:-help}"
 if [ "$#" -gt 0 ]; then shift; fi
 
 case "$command" in
+  dev|api|test|seed|seed-fixtures|export|benchmark|db-status|migrate|studio)
+    if [ -z "${DATABASE_URL:-}" ] && [ -n "${TSNM_ENV_FILE:-}" ]; then
+      [ -f "$TSNM_ENV_FILE" ] && [ -r "$TSNM_ENV_FILE" ] || {
+        echo 'Cannot read the database environment file specified by TSNM_ENV_FILE.' >&2
+        exit 2
+      }
+      set -a
+      source "$TSNM_ENV_FILE"
+      set +a
+    fi
+    ;;
+esac
+
+case "$command" in
   help|--help|-h)
     cat <<'USAGE'
 Usage: tsnm COMMAND [ARGS]
@@ -28,6 +42,7 @@ Usage: tsnm COMMAND [ARGS]
   analytics [FILE]     Read analytics JSON records from a file or stdin
 
 Enter `nix develop` first. Runtime database commands use DATABASE_URL.
+If it is unset, database commands load the trusted shell file TSNM_ENV_FILE.
 Development and seed commands require TALLSTUFF_ENV=dev or test.
 Set TSNM_PROJECT_DIR to select a checkout and TSNM_DEV_HOST for browser API URLs.
 USAGE
