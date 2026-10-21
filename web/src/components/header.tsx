@@ -5,9 +5,10 @@ import { Badge } from "@/components/ui/badge";
 interface HeaderProps {
   objectCount: number;
   loading: boolean;
+  error: boolean;
 }
 
-export function Header({ objectCount, loading }: HeaderProps) {
+export function Header({ objectCount, loading, error }: HeaderProps) {
   return (
     <header className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between px-4 py-2 bg-background/80 backdrop-blur-sm border-b">
       <div>
@@ -19,7 +20,7 @@ export function Header({ objectCount, loading }: HeaderProps) {
           <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
         )}
         <Badge variant="secondary" data-testid="object-count">
-          {objectCount} objects
+          {error ? "Objects unavailable" : `${objectCount} objects`}
         </Badge>
       </div>
     </header>

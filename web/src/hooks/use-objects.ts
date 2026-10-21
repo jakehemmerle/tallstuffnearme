@@ -12,20 +12,20 @@ interface UseObjectsOptions {
 
 export function useObjects({ minHeight, excludeObjectTypes }: UseObjectsOptions) {
   const [data, setData] = useState<ObjectGeoJson | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [status, setStatus] = useState<"idle" | "loading" | "ready" | "error">("idle");
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const abortRef = useRef<AbortController | null>(null);
 
   const fetch = useCallback(
     (bounds: Bounds, center?: { latitude: number; longitude: number }) => {
+      if (abortRef.current) abortRef.current.abort();
       if (debounceRef.current) clearTimeout(debounceRef.current);
 
       debounceRef.current = setTimeout(async () => {
-        if (abortRef.current) abortRef.current.abort();
         const controller = new AbortController();
         abortRef.current = controller;
 
-        setLoading(true);
+        setStatus("loading");
         try {
           const result = await fetchObjects(
             {
@@ -40,13 +40,11 @@ export function useObjects({ minHeight, excludeObjectTypes }: UseObjectsOptions)
           );
           if (!controller.signal.aborted) {
             setData(result);
+            setStatus("ready");
           }
-        } catch (err) {
-          if (err instanceof DOMException && err.name === "AbortError") return;
-          console.error("Failed to fetch objects:", err);
-        } finally {
+        } catch {
           if (!controller.signal.aborted) {
-            setLoading(false);
+            setStatus("error");
           }
         }
       }, 300);
@@ -62,5 +60,5 @@ export function useObjects({ minHeight, excludeObjectTypes }: UseObjectsOptions)
     };
   }, []);
 
-  return { data, loading, fetch };
+  return { data, loading: status === "loading", error: status === "error", fetch };
 }
