@@ -1,10 +1,10 @@
-name: Deploy Production
+name: Legacy Cloud Run production rollback
 
 on:
   workflow_dispatch:
     inputs:
       confirm:
-        description: "Type 'deploy' to confirm production deployment"
+        description: "Type 'legacy-rollback' to redeploy Cloud Run and its old DNS records"
         required: true
 
 env:
@@ -14,7 +14,7 @@ env:
 
 jobs:
   deploy:
-    if: github.event.inputs.confirm == 'deploy'
+    if: github.event.inputs.confirm == 'legacy-rollback'
     runs-on: ubuntu-latest
     permissions:
       contents: read

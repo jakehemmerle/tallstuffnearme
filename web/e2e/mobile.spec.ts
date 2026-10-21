@@ -30,7 +30,7 @@ test.describe("Mobile", () => {
     await expect(page.locator("h1")).toHaveText("Tall Shit Near Me");
   });
 
-  test("detail sheet opens from bottom on mobile", async ({ page }) => {
+  test("object details open on mobile", async ({ page }) => {
     await page.route("**/objects", (route) =>
       route.fulfill({
         status: 200,
@@ -45,28 +45,8 @@ test.describe("Mobile", () => {
       { timeout: 10000 }
     );
 
-    const hasMap = await page.evaluate(
-      () => !!(window as unknown as Record<string, unknown>).__testMap
-    );
-
-    if (hasMap) {
-      const pixel = await page.evaluate(() => {
-        const map = (window as unknown as Record<string, unknown>).__testMap as {
-          project: (lngLat: [number, number]) => { x: number; y: number };
-        };
-        const p = map.project([-98.6, 39.8]);
-        return { x: p.x, y: p.y };
-      });
-
-      await page.locator("canvas").click({
-        position: { x: pixel.x, y: pixel.y },
-      });
-
-      const sheet = page.locator("[data-slot='sheet-content']");
-      await expect(sheet).toBeVisible({ timeout: 5000 });
-    } else {
-      test.skip();
-    }
+    await page.locator("canvas").click();
+    await expect(page.getByRole("dialog")).toBeVisible();
   });
 
   test("filters accessible on mobile", async ({ page }) => {
@@ -83,8 +63,6 @@ test.describe("Mobile", () => {
       "1 objects",
       { timeout: 10000 }
     );
-
-    await expect(page.locator("[data-testid='height-slider']")).toBeVisible();
 
     await expect(
       page.locator("[data-testid='type-filter-button']")

@@ -29,3 +29,9 @@ web/out
 # Dolt database files
 .dolt/
 *.db
+
+# Local build and browser artifacts
+*.tsbuildinfo
+web/playwright-report/
+web/test-results/
+.env.*

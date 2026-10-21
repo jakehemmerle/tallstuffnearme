@@ -21,7 +21,7 @@ test.describe("Map", () => {
     );
   });
 
-  test("click marker opens detail sheet", async ({ page }) => {
+  test("click marker opens object details", async ({ page }) => {
     await page.route("**/objects", (route) =>
       route.fulfill({
         status: 200,
@@ -36,28 +36,8 @@ test.describe("Map", () => {
       { timeout: 10000 }
     );
 
-    const hasMap = await page.evaluate(
-      () => !!(window as unknown as Record<string, unknown>).__testMap
-    );
-
-    if (hasMap) {
-      const pixel = await page.evaluate(() => {
-        const map = (window as unknown as Record<string, unknown>).__testMap as {
-          project: (lngLat: [number, number]) => { x: number; y: number };
-        };
-        const p = map.project([-98.6, 39.8]);
-        return { x: p.x, y: p.y };
-      });
-      await page.locator("canvas").click({
-        position: { x: pixel.x, y: pixel.y },
-      });
-
-      await expect(page.locator("[data-slot='sheet-content']")).toBeVisible({
-        timeout: 5000,
-      });
-    } else {
-      test.skip();
-    }
+    await page.locator("canvas").click();
+    await expect(page.getByRole("dialog")).toBeVisible();
   });
 
   test("pan triggers re-fetch", async ({ page }) => {
@@ -79,22 +59,7 @@ test.describe("Map", () => {
 
     const initialCount = requestCount;
 
-    const hasMap = await page.evaluate(
-      () => !!(window as unknown as Record<string, unknown>).__testMap
-    );
-
-    if (hasMap) {
-      await page.evaluate(() => {
-        const map = (window as unknown as Record<string, unknown>).__testMap as {
-          panBy: (offset: [number, number]) => void;
-        };
-        map.panBy([200, 0]);
-      });
-
-      await page.waitForTimeout(1000);
-      expect(requestCount).toBeGreaterThan(initialCount);
-    } else {
-      expect(requestCount).toBeGreaterThanOrEqual(1);
-    }
+    await page.locator("canvas").press("ArrowRight");
+    await expect.poll(() => requestCount).toBeGreaterThan(initialCount);
   });
 });

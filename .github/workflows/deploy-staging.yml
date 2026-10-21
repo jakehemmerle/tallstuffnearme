@@ -1,8 +1,11 @@
-name: Deploy Staging
+name: Legacy Cloud Run staging rollback
 
 on:
-  push:
-    branches: [master]
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: "Type 'legacy-rollback' to redeploy Cloud Run and its old DNS records"
+        required: true
 
 env:
   GCP_PROJECT: tallshitnearme-app
@@ -53,6 +56,7 @@ jobs:
           fi
 
   deploy:
+    if: github.event.inputs.confirm == 'legacy-rollback'
     needs: test
     runs-on: ubuntu-latest
     permissions:

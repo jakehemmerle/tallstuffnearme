@@ -5,13 +5,14 @@ import { body, validationResult } from 'express-validator';
 import { defaultQuery, parseRequestBody, searchObjects } from './controller';
 import { ObjectQueryRequest } from './types';
 import { recordClientAnalyticsEvent, recordObjectSearch } from './analytics';
+import prisma from './prisma';
 
 const app = express();
 app.use(cors());
 app.use(json());
 
 // Serve static frontend (Next.js export)
-const staticDir = path.join(__dirname, '..', 'public');
+const staticDir = path.join(import.meta.dir, '..', 'public');
 app.use(express.static(staticDir));
 
 app.post("/analytics", (req: Request, res: Response) => {
@@ -48,6 +49,15 @@ app.post(
 
 // DEV ping
 app.get('/ping', (_, res: Response) => res.send('pong'));
+
+app.get('/readyz', async (_, res: Response) => {
+  try {
+    const record = await prisma.fAAObject.findFirst({ select: { OASNumber: true } });
+    res.status(record ? 200 : 503).json({ ok: record !== null });
+  } catch {
+    res.status(503).json({ ok: false });
+  }
+});
 
 // DEV example query for developers to see data format
 app.get('/example', async (_, res: Response) => defaultQuery().then(result => res.json(result)));

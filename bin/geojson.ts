@@ -1,13 +1,11 @@
+import { writeFile } from 'node:fs/promises';
 import { defaultQuery } from '../src/controller';
-import { createWriteStream } from 'fs';
+import prisma from '../src/prisma';
 
-// query data from controller
-const geoJsonObjectData = defaultQuery();
-
-// write geojson to file
-const geoJsonObjectFile = createWriteStream('./geojson.json');
-geoJsonObjectData.then(data => {
-  geoJsonObjectFile.write(JSON.stringify(data));
-});
-
-console.log('geojson.json created with default query');
+const output = process.argv[2] ?? 'geojson.json';
+try {
+  await writeFile(output, JSON.stringify(await defaultQuery()) + '\n');
+  process.stdout.write(`Created ${output}\n`);
+} finally {
+  await prisma.$disconnect();
+}

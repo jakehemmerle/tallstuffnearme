@@ -1,11 +1,15 @@
-version: '3.1'
-
 services:
-
   tallshitnearme-postgres:
-    image: postgres:14
+    image: postgres:17.11
     restart: always
     ports:
-        - 5433:5432
+      - 127.0.0.1:5433:5432
     environment:
-      POSTGRES_PASSWORD: example
+      POSTGRES_DB: tallshit_dev
+      POSTGRES_USER: tallstuffnearme
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD privately}
+    volumes:
+      - tallshit_dev_pg17:/var/lib/postgresql/data
+
+volumes:
+  tallshit_dev_pg17:

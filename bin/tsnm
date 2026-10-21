@@ -1,0 +1,75 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+source_dir="${TSNM_SOURCE_DIR:-$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)}"
+project_dir="${TSNM_PROJECT_DIR:-$PWD}"
+command="${1:-help}"
+if [ "$#" -gt 0 ]; then shift; fi
+
+case "$command" in
+  help|--help|-h)
+    cat <<'USAGE'
+Usage: tsnm COMMAND [ARGS]
+
+  setup                Install locked dependencies and generate the Prisma client
+  dev                  Run the API and Next development server from this checkout
+  api                  Run only the development API
+  build                Build the frontend in this checkout
+  test                 Run backend tests against the configured test database
+  seed [DATA_DIR]      Import missing FAA records into a local dev/test database
+  seed-fixtures        Insert deterministic records into a local test database
+  export [FILE]        Export the default query as GeoJSON, default geojson.json
+  benchmark [ARGS]     Run the existing database/API benchmark
+  db-status            Read database version, identity and FAA row count
+  migrate              Apply committed Prisma migrations
+  studio               Open Prisma Studio on loopback for development
+  health [URL]         Check database-backed readiness, default localhost:3001
+  logs [JOURNAL_ARGS]  Read the local application service journal
+  analytics [FILE]     Read analytics JSON records from a file or stdin
+
+Enter `nix develop` first. Runtime database commands use DATABASE_URL.
+Development and seed commands require TALLSTUFF_ENV=dev or test.
+Set TSNM_PROJECT_DIR to select a checkout and TSNM_DEV_HOST for browser API URLs.
+USAGE
+    ;;
+  setup|dev|api|build|test)
+    test -f "$project_dir/package.json" && test -d "$project_dir/web" || {
+      echo 'Run from the project checkout or set TSNM_PROJECT_DIR.' >&2; exit 2;
+    }
+    cd "$project_dir"
+    case "$command" in
+      setup) bun install --frozen-lockfile; exec bunx --no-install --bun prisma generate ;;
+      build) cd web; exec bun run build ;;
+      test) exec bun test ./src ./tests ;;
+      api|dev)
+        case "${TALLSTUFF_ENV:-}" in dev|test) ;; *) echo 'Set TALLSTUFF_ENV=dev for development servers.' >&2; exit 2 ;; esac
+        export ANALYTICS_ENABLED=false
+        if [ "$command" = api ]; then exec bun --hot src/index.ts; fi
+        bun --hot src/index.ts &
+        api_pid=$!
+        trap 'kill "$api_pid" 2>/dev/null || true; wait "$api_pid" 2>/dev/null || true' EXIT
+        export NEXT_PUBLIC_API_URL="${NEXT_PUBLIC_API_URL:-http://${TSNM_DEV_HOST:-localhost}:${PORT:-3001}}"
+        cd web
+        bun run dev
+        ;;
+    esac
+    ;;
+  seed) exec bun "$source_dir/scripts/seedDB.ts" "$@" ;;
+  seed-fixtures) exec bun "$source_dir/scripts/seed-fixtures.ts" "$@" ;;
+  export) exec bun "$source_dir/bin/geojson.ts" "$@" ;;
+  benchmark) exec bun "$source_dir/src/benchmark.ts" "$@" ;;
+  db-status) exec bun "$source_dir/scripts/database-status.ts" ;;
+  migrate)
+    cd "$source_dir"
+    exec bunx --no-install --bun prisma migrate deploy
+    ;;
+  studio)
+    case "${TALLSTUFF_ENV:-}" in dev|test) ;; *) echo 'Prisma Studio is restricted to dev/test.' >&2; exit 2 ;; esac
+    cd "$source_dir"
+    exec bunx --no-install --bun prisma studio --browser none
+    ;;
+  health) exec curl --fail --silent --show-error --max-time 10 "${1:-http://127.0.0.1:3001}/readyz" ;;
+  logs) exec journalctl -u tallshitnearme-app.service "$@" ;;
+  analytics) exec jq -Rc 'fromjson? | select(.eventName? != null or .event? != null)' "${1:-/dev/stdin}" ;;
+  *) echo "Unknown command: $command. Run tsnm help." >&2; exit 2 ;;
+esac
