@@ -35,3 +35,8 @@ web/out
 web/playwright-report/
 web/test-results/
 .env.*
+
+# Beads / Dolt files (added by bd init)
+.beads-credential-key
+.beads/proxieddb/
+*.gate.lock*
