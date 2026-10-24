@@ -69,12 +69,10 @@ development or test database and destroys that database's contents.
 ## Agents and infrastructure
 
 The project skill has one source at `.agents/skills/tallshitnearme/SKILL.md`.
-Agent-specific discovery entries link there. `bd` tracks migration work and
-dependencies. Infrastructure, persistent disk UUIDs, immutable application pins,
-secret recovery and backup commands are documented in
-`~/nix-config/docs/tallshitnearme.md`.
+Agent-specific discovery entries link there. Infrastructure, persistent disk
+UUIDs, immutable application pins, secret recovery and backup commands are
+documented in `~/nix-config/docs/tallshitnearme.md`.
 
-The refreshed Beads workspace uses prefix `tsnm`. On a new clone, run
-`bd init --prefix tsnm` if no workspace exists, then `bd dolt pull` and
-`bd prime`. The Dolt remote uses the repository's Git-over-SSH transport;
-agent credentials need write access only when publishing issue updates.
+Issues live in the workspace Beads instance (`~/ws/.beads`, label
+`project:tallstuffnearme`); this repository has no Beads database of its own.
+Migrated `tsnm-*` issues keep their old id as the external ref.
