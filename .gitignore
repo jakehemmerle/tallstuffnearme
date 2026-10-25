@@ -35,3 +35,4 @@ web/out
 web/playwright-report/
 web/test-results/
 .env.*
+!.env*.example
